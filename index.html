@@ -5,1152 +5,167 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
 <title>post.it</title>
 <style>
-:root{--bg:#0a0a0a;--card:#161616;--in:#1c1c1c;--bd:#262626;--bh:#383838;--tx:#ededed;--dim:#a0a0a0;--mut:#666;--ac:#ededed;--inv:#0a0a0a;--dg:#ff4d4d;--wg:#ffb84d;--ok:#4dff88;}
+:root{--bg:#0a0a0a;--card:#161616;--bd:#262626;--tx:#ededed;--dg:#ff4d4d;--wg:#ffb84d;--ok:#4dff88;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:#0a0a0a;color:#ededed;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.5;min-height:100vh;}
-header{position:sticky;top:0;z-index:50;background:rgba(10,10,10,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid #262626;}
-.hd{max-width:1200px;margin:0 auto;padding:0 14px;height:56px;display:flex;align-items:center;gap:10px;}
-.lg{font-size:17px;font-weight:800;color:#ededed;text-decoration:none;letter-spacing:-.5px;white-space:nowrap;}
-.lg .d{color:#666;}
-.lg .tag{font-size:9px;font-weight:600;background:#161616;border:1px solid #262626;color:#666;padding:2px 6px;border-radius:99px;letter-spacing:.4px;margin-left:6px;vertical-align:middle;}
-.search{flex:1;position:relative;min-width:0;}
-.search input{width:100%;height:38px;background:#1c1c1c;border:1px solid #262626;border-radius:8px;color:#ededed;padding:0 12px 0 34px;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;}
-.search input::placeholder{color:#666;}
-.search input:focus{border-color:#383838;}
-.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#666;pointer-events:none;fill:none;stroke:currentColor;stroke-width:2;}
-.ib{width:38px;height:38px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:none;border:none;border-radius:8px;color:#a0a0a0;cursor:pointer;}
-.ib svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;}
-.ib:active{background:#161616;}
-main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
-.tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid #262626;}
-.tab{padding:11px 14px;font-size:14px;font-weight:500;color:#666;background:none;border:none;font-family:inherit;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s;}
-.tab.on{color:#ededed;border-bottom-color:#ededed;}
-.pane{display:none;}
-.pane.on{display:block;}
-
-/* FILTRES NSFW/GORE/AUTRES */
-.filters{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
-.filters::-webkit-scrollbar{display:none;}
-.filter{padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:.3px;color:#a0a0a0;background:#161616;border:1.5px solid #262626;border-radius:99px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s;user-select:none;-webkit-user-select:none;}
-.filter:active{transform:scale(.96);}
-.filter.on{background:#ededed;color:#0a0a0a;border-color:#ededed;}
-.filter.f-nsfw.on{background:#ff4d4d;border-color:#ff4d4d;color:#fff;}
-.filter.f-gore.on{background:#ff8c00;border-color:#ff8c00;color:#fff;}
-.filter.f-other.on{background:#a0a0a0;border-color:#a0a0a0;color:#fff;}
-
-/* STORAGE */
-.storage{padding:12px 14px;background:#111;border:1px solid #262626;border-radius:10px;margin-bottom:14px;}
-.storage .lab{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#a0a0a0;margin-bottom:7px;font-weight:500;gap:8px;}
-.storage .lab b{color:#ededed;font-weight:600;font-variant-numeric:tabular-nums;}
-.storage .bar{height:6px;background:#1c1c1c;border-radius:99px;overflow:hidden;}
-.storage .fill{height:100%;background:linear-gradient(90deg,#4dff88,#4dd0ff);border-radius:99px;transition:width .35s ease,background .3s;width:0;}
-.storage.warn{border-color:rgba(255,184,77,.4);}
-.storage.warn .fill{background:linear-gradient(90deg,#ffb84d,#ff8c00);}
-.storage.warn .lab b{color:#ffb84d;}
-.storage.danger{border-color:rgba(255,77,77,.5);}
-.storage.danger .fill{background:linear-gradient(90deg,#ff4d4d,#ff2d2d);}
-.storage.danger .lab b{color:#ff4d4d;}
-
-.sh{margin-bottom:14px;}
-.sh h2{font-size:16px;font-weight:700;letter-spacing:-.2px;}
-.sh p{font-size:12px;color:#666;margin-top:2px;}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-@media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr);}}
-@media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr);}}
-.card{background:#161616;border:1px solid #262626;border-radius:12px;overflow:hidden;position:relative;}
-.ibox{position:relative;width:100%;padding-top:100%;background:#0d0d0d;overflow:hidden;cursor:pointer;}
-.ibox img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;transition:filter .3s;}
-.ibox img.cens{filter:blur(22px) brightness(.5);transform:scale(1.15);}
-.cov{position:absolute;top:0;left:0;right:0;bottom:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:rgba(0,0,0,.45);z-index:2;}
-.cov.on{display:flex;}
-.cov .ic{font-size:22px;color:#fff;opacity:.9;}
-.cov .lb{font-size:10px;font-weight:700;letter-spacing:.5px;color:#ccc;text-transform:uppercase;}
-.cov .hx{font-size:9px;color:#888;}
-.bgs{position:absolute;top:6px;left:6px;display:flex;gap:3px;z-index:3;flex-wrap:wrap;max-width:calc(100% - 44px);}
-.bg{font-size:8px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 6px;border-radius:4px;}
-.bg.n{background:#ff4d4d;color:#fff;}
-.bg.g{background:#ff8c00;color:#fff;}
-.bg.o{background:#888;color:#fff;}
-.bg.i{background:#ffb84d;color:#000;}
-
-.del{
-  position:absolute;top:6px;right:6px;z-index:4;
-  width:28px;height:28px;
-  background:rgba(0,0,0,.65);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:50%;
-  color:#fff;font-size:13px;font-family:inherit;line-height:1;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;padding:0;
-  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
-  transition:background .15s,border-color .15s,transform .1s;
-}
-.del:hover{background:rgba(255,77,77,.9);border-color:rgba(255,77,77,.9);}
-.del:active{transform:scale(.9);background:rgba(255,77,77,.95);border-color:#ff4d4d;}
-
-.bd{padding:10px 12px;}
-.tt{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
-.mt{font-size:11px;color:#666;}
-.empty{text-align:center;padding:60px 20px;color:#666;}
-.empty .ei{font-size:40px;opacity:.4;margin-bottom:12px;}
-.empty .et{font-size:15px;font-weight:600;color:#a0a0a0;margin-bottom:6px;}
-.empty .ed{font-size:13px;max-width:320px;margin:0 auto;}
-.uz{display:block;border:1.5px dashed #262626;border-radius:12px;padding:40px 20px;text-align:center;background:#111;cursor:pointer;text-decoration:none;}
-.uz:active{border-color:#ededed;}
-.uz .ui{font-size:32px;opacity:.5;margin-bottom:10px;color:#a0a0a0;}
-.uz .ut{font-size:15px;font-weight:600;margin-bottom:5px;color:#ededed;}
-.uz .ud{font-size:12px;color:#666;margin-bottom:16px;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:42px;padding:0 18px;border-radius:8px;border:1px solid #262626;background:#161616;color:#ededed;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;-webkit-appearance:none;appearance:none;text-decoration:none;}
-.btn:active{transform:scale(.97);}
-.btn.p{background:#ededed;color:#0a0a0a;border-color:#ededed;font-weight:700;}
-.btn.p:active{background:#fff;}
-.btn.full{width:100%;}
-.btn.dng{background:#ff4d4d;color:#fff;border-color:#ff4d4d;font-weight:700;}
-.btn.dng:active{background:#ff2d2d;}
-.pv{display:none;margin-top:16px;background:#161616;border:1px solid #262626;border-radius:12px;padding:16px;}
-.pv.on{display:block;}
-.pv img{width:100%;max-height:260px;object-fit:contain;background:#0d0d0d;border-radius:8px;border:1px solid #262626;margin-bottom:12px;}
-.pv .fn{font-size:12px;color:#666;margin-bottom:12px;word-break:break-all;}
-.fld{margin-bottom:14px;}
-.fld label{display:block;font-size:12px;font-weight:600;color:#a0a0a0;margin-bottom:6px;}
-.fld input{width:100%;height:42px;background:#1c1c1c;border:1px solid #262626;border-radius:8px;color:#ededed;padding:0 12px;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;}
-.fld input:focus{border-color:#383838;}
-.pils{display:flex;flex-wrap:wrap;gap:8px;}
-.pil{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;background:#1c1c1c;border:1.5px solid #262626;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;user-select:none;-webkit-user-select:none;color:#a0a0a0;}
-.pil:active{transform:scale(.96);}
-.pil .dot{width:8px;height:8px;border-radius:50%;background:#262626;flex-shrink:0;}
-.pil[data-t="nsfw"].on{border-color:#ff4d4d;background:rgba(255,77,77,.14);color:#fff;}
-.pil[data-t="nsfw"].on .dot{background:#ff4d4d;}
-.pil[data-t="gore"].on{border-color:#ffb84d;background:rgba(255,184,77,.14);color:#fff;}
-.pil[data-t="gore"].on .dot{background:#ffb84d;}
-.pil[data-t="other"].on{border-color:#a0a0a0;background:rgba(160,160,160,.14);color:#fff;}
-.pil[data-t="other"].on .dot{background:#a0a0a0;}
-.acts{display:flex;gap:8px;margin-top:16px;}
-.acts .btn{flex:1;}
-.ia{display:none;align-items:center;gap:8px;font-size:11px;color:#666;padding:8px 12px;background:#111;border:1px solid #262626;border-radius:99px;margin-top:12px;}
-.ia.on{display:inline-flex;}
-.sp{width:12px;height:12px;border:2px solid #262626;border-top-color:#a0a0a0;border-radius:50%;animation:sp .6s linear infinite;flex-shrink:0;}
-@keyframes sp{to{transform:rotate(360deg);}}
-.settings{background:#161616;border:1px solid #262626;border-radius:12px;overflow:hidden;}
-.settings h3{font-size:14px;font-weight:700;padding:14px 16px;border-bottom:1px solid #262626;}
-.row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid #262626;}
-.row:last-child{border-bottom:none;}
-.ri{flex:1;min-width:0;}
-.ri .n{font-size:14px;font-weight:600;margin-bottom:3px;}
-.ri .d{font-size:12px;color:#666;}
-.tg{position:relative;width:46px;height:26px;flex-shrink:0;display:block;}
-.tg input{position:absolute;opacity:0;width:0;height:0;}
-.tg .sl{position:absolute;top:0;left:0;right:0;bottom:0;background:#262626;border-radius:99px;cursor:pointer;transition:background .2s;}
-.tg .sl::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#a0a0a0;border-radius:50%;transition:all .2s;}
-.tg input:checked + .sl{background:#ededed;}
-.tg input:checked + .sl::before{transform:translateX(20px);background:#0a0a0a;}
-.mand{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:rgba(77,255,136,.12);border:1px solid rgba(77,255,136,.35);color:#4dff88;}
-.mand .dot{width:6px;height:6px;border-radius:50%;background:#4dff88;box-shadow:0 0 6px #4dff88;}
-.info{font-size:11px;color:#666;margin-top:10px;line-height:1.5;padding:12px;background:#111;border:1px solid #262626;border-radius:8px;}
-.info b{color:#a0a0a0;font-weight:600;}
-
-.modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:16px;}
-.modal.on{display:flex;}
-.modal img{max-width:100%;max-height:80vh;border-radius:12px;display:block;object-fit:contain;}
-.modal img.cens{filter:blur(22px) brightness(.5);}
-.mclose{position:absolute;top:16px;right:16px;width:40px;height:40px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50%;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;}
-
-.cfbox{background:#161616;border:1px solid #262626;border-radius:14px;padding:22px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.7);}
-.cfbox h3{font-size:16px;font-weight:700;margin-bottom:8px;color:#ededed;}
-.cfbox p{font-size:13px;color:#a0a0a0;line-height:1.55;margin-bottom:18px;word-break:break-word;}
-.cfbtns{display:flex;gap:8px;justify-content:flex-end;}
-.cfbtns .btn{height:38px;padding:0 16px;font-size:13px;}
-
-/* AGE GATE */
-.agegate{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#0a0a0a;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
-.agegate.hide{display:none !important;}
-.agebox{max-width:460px;width:100%;background:#161616;border:1px solid #262626;border-radius:16px;padding:28px 22px;text-align:center;box-shadow:0 20px 80px rgba(0,0,0,.8);}
-.ageicon{font-size:56px;margin-bottom:14px;color:#ffb84d;line-height:1;}
-.agebox h2{font-size:20px;font-weight:800;margin-bottom:14px;color:#ededed;letter-spacing:-.3px;}
-.agebox p{font-size:14px;color:#a0a0a0;line-height:1.65;margin-bottom:12px;}
-.agebox .warn{color:#ffb84d;font-weight:700;}
-.agebox .danger{color:#ff4d4d;font-weight:700;}
-.agebox .rule{height:1px;background:#262626;margin:18px 0;}
-.agebtns{display:flex;flex-direction:column;gap:8px;margin-top:22px;}
-.agebtns .btn{width:100%;height:46px;font-size:14px;}
-.agebtns .btn.age-no{background:transparent;border-color:#262626;color:#a0a0a0;font-weight:500;font-size:12px;}
-.agebtns .btn.age-no:hover{color:#ededed;}
-
-.toasts{position:fixed;left:12px;right:12px;bottom:12px;z-index:2000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
-@media(min-width:600px){.toasts{left:auto;right:20px;bottom:20px;align-items:flex-end;}}
-.toast{background:#161616;border:1px solid #262626;border-radius:8px;padding:12px 16px;font-size:13px;max-width:min(92vw,380px);pointer-events:auto;box-shadow:0 6px 24px rgba(0,0,0,.6);}
-.toast.s{border-left:3px solid #4dff88;}
-.toast.e{border-left:3px solid #ff4d4d;}
-.toast.w{border-left:3px solid #ffb84d;}
 .hide{display:none !important;}
+.center{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
+.box{background:#161616;border:1px solid #262626;border-radius:14px;padding:26px;max-width:420px;width:100%;text-align:center;}
+.box h2{font-size:19px;font-weight:800;margin-bottom:12px;}
+.box p{font-size:13px;color:#a0a0a0;line-height:1.6;margin-bottom:16px;}
+.warn{color:#ffb84d;font-weight:700;}
+.dng{color:#ff4d4d;font-weight:700;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:46px;padding:0 20px;border-radius:8px;border:1px solid #262626;background:#161616;color:#ededed;font-size:14px;font-weight:g600;font-family:inherit;cursor:pointer;text-decoration:none;{width:100%;}
+font.btn:active{transform-size:scale(.97);}
+.btn.p{background:#ededed;color:#0a0a0a;border-color:#ededed;font-weight:700;}
+.btn.discord{background:#5865f2;color:#fff;border-color:#5865f2;font-weight:700;}
+.btn.discord:active{background:#4752c4;}
+.agebtns{display:flex;flex-direction:column;gap:8px;margin-top:20px;}
+.agebtns .btn{height:46px;}
+.sp{width:26px;height:26px;border:3px solid #262626;border-top-color:#a0a0a0;border-radius:50%;animation:sp .6s linear infinite;display:inline-block;}
+@keyframes sp{to{transform:rotate(360deg);}}
+header{position:sticky;top:0;z-index:50;background:rgba(10,10,10,.94);backdrop-filter:blur(18px);border-bottom:1px solid #262626;}
+.hd{max-width:1200px;margin:0 auto;padding:0 14px;height:56px;display:flex;align-items:center;gap:10px;}
+.l:17px;font-weight:800;letter-spacing:-.5px;}
+.lg .d{color:#666;}
+.usr{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.usr img{width:28px;height:28px;border-radius:50%;border:1px solid #262626;}
+.usr .nm{font-size:13px;color:#a0a0a0;font-weight:500;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.usr .bdg{font-size:9px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:2px 6px;border-radius:4px;background:#ff4d4d;color:#fff;}
+.usr .lo{background:none;border:1px solid #262626;border-radius:6px;color:#a0a0a0;font-size:11px;padding:5px 9px;cursor:pointer;font-family:inherit;}
+main{max-width:1200px;margin:0 auto;padding:20px 14px 80px;}
+h1{font-size:20px;font-weight:700;margin-bottom:6px;}
+.sub{font-size:13px;color:#666;margin-bottom:20px;}
+.err{color:#ff4d4d;font-size:12px;margin-top:14px;}
 </style>
 </head>
 <body>
 
-<!-- AGE GATE -->
-<div class="agegate" id="agegate">
-  <div class="agebox">
-    <div class="ageicon">&#9888;&#65039;</div>
-    <h2>Avertissement</h2>
-    <p>
-      <span class="warn">post.it</span> est un espace de partage qui peut contenir du contenu
-      <span class="danger">NSFW</span>, <span class="danger">Gore</span> et d'autres
-      contenus sensibles ou choquants.
-    </p>
-    <p>
-      En continuant, vous certifiez avoir <span class="warn">18 ans ou plus</span>
-      et consentir à voir ce type de contenu.
-    </p>
-    <div class="rule"></div>
-    <p style="font-size:12px;color:#666;">
-      Si vous avez moins de 18 ans, vous allez etre redirige vers google.com.
-    </p>
+<!-- 1. AGE GATE -->
+<div class="center" id="ageScreen">
+  <div class="box">
+    <h2>&#9888;&#65039; Avertissement</h2>
+    <p><span class="warn">post.it</span> peut contenir du contenu <span class="dng">NSFW</span>, <span class="dng">Gore</span> et d'autres contenus choquants.</p>
+    <p>En continuant, vous certifiez avoir <span class="warn">18 ans ou plus</span>.</p>
     <div class="agebtns">
-      <button class="btn p" id="ageYes" type="button">J'ai 18 ans ou plus &mdash; Entrer</button>
-      <button class="btn age-no" id="ageNo" type="button">J'ai moins de 18 ans</button>
+      <button class="btn p" id="ageYes" type="button">J'ai 18 ans ou plus</button>
+      <button class="btn" id="ageNo" type="button">J'ai moins de 18 ans</button>
     </div>
   </div>
 </div>
 
-<header>
-  <div class="hd">
-    <a href="#" class="lg" id="logoBtn">post<span class="d">.</span>it<span class="tag">beta</span></a>
-    <div class="search">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-      <input id="q" type="text" placeholder="Rechercher..." autocomplete="off">
-    </div>
-    <button class="ib" id="gearBtn" type="button" aria-label="Parametres">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-    </button>
-  </div>
-</header>
-
-<main>
-  <div class="tabs">
-    <button class="tab on" id="tab-browse" type="button">Explorer</button>
-    <button class="tab" id="tab-upload" type="button">Uploader</button>
-    <button class="tab" id="tab-settings" type="button">Parametres</button>
-  </div>
-
-  <section class="pane on" id="pane-browse">
-    <div class="filters" id="filters">
-      <button class="filter on" data-f="all" type="button">Tout</button>
-      <button class="filter f-nsfw" data-f="nsfw" type="button">NSFW</button>
-      <button class="filter f-gore" data-f="gore" type="button">Gore</button>
-      <button class="filter f-other" data-f="other" type="button">Autres</button>
-    </div>
-    <div class="storage" id="storage">
-      <div class="lab"><span>Stockage utilise</span><b id="storageTxt">0 o / 100 Mo</b></div>
-      <div class="bar"><div class="fill" id="storageFill"></div></div>
-    </div>
-    <div class="sh">
-      <h2 id="ttl">Toutes les photos</h2>
-      <p id="sub">-</p>
-    </div>
-    <div class="grid" id="grid"></div>
-    <div class="empty" id="empty">
-      <div class="ei">&#128247;</div>
-      <div class="et">Aucune photo</div>
-      <div class="ed">La galerie est vide. Uploadez la premiere photo !</div>
-    </div>
-  </section>
-
-  <section class="pane" id="pane-upload">
-    <div class="sh">
-      <h2>Uploader une photo</h2>
-      <p>Declarez le contenu pour que les autres puissent le censurer.</p>
-    </div>
-
-    <label class="uz" id="drop" for="file">
-      <div class="ui">&#11014;</div>
-      <div class="ut">Ajouter une image</div>
-      <div class="ud">JPG, PNG, WebP, GIF - max 10 Mo par image</div>
-      <span class="btn p full">Choisir un fichier</span>
-      <input id="file" type="file" accept="image/*" style="display:none">
-    </label>
-
-    <div class="pv" id="pv">
-      <img id="pimg" alt="">
-      <div class="fn" id="pname"></div>
-
-      <div class="fld">
-        <label>Titre</label>
-        <input id="ptitle" type="text" placeholder="Titre de la photo..." maxlength="80">
-      </div>
-
-      <div class="fld">
-        <label>Classification (optionnel)</label>
-        <div class="pils">
-          <div class="pil" data-t="nsfw"><span class="dot"></span>NSFW</div>
-          <div class="pil" data-t="gore"><span class="dot"></span>Gore</div>
-          <div class="pil" data-t="other"><span class="dot"></span>Autre</div>
-        </div>
-      </div>
-
-      <div class="ia" id="iaInd"><div class="sp"></div><span id="iaTxt">Analyse IA...</span></div>
-
-      <div class="acts">
-        <button class="btn p" id="pubBtn" type="button">Publier</button>
-        <button class="btn" id="cxlBtn" type="button">Annuler</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="pane" id="pane-settings">
-    <div class="sh">
-      <h2>Parametres de censure</h2>
-      <p>Rien n'est censure par defaut. Activez ce que vous voulez flouter.</p>
-    </div>
-
-    <div class="settings">
-      <h3>Flouter dans la galerie</h3>
-      <div class="row">
-        <div class="ri">
-          <div class="n">NSFW / Adulte</div>
-          <div class="d">Floute les images marquees comme contenu sexuel.</div>
-        </div>
-        <label class="tg"><input type="checkbox" id="cNsfw"><span class="sl"></span></label>
-      </div>
-      <div class="row">
-        <div class="ri">
-          <div class="n">Gore / Violence</div>
-          <div class="d">Floute le sang, blessures, violence.</div>
-        </div>
-        <label class="tg"><input type="checkbox" id="cGore"><span class="sl"></span></label>
-      </div>
-      <div class="row">
-        <div class="ri">
-          <div class="n">Autres contenus sensibles</div>
-          <div class="d">Floute les images marquees "autre".</div>
-        </div>
-        <label class="tg"><input type="checkbox" id="cOther"><span class="sl"></span></label>
-      </div>
-      <div class="row">
-        <div class="ri">
-          <div class="n">Detection IA automatique</div>
-          <div class="d">Analyse chaque image a l'upload et coche NSFW si necessaire.</div>
-        </div>
-        <span class="mand"><span class="dot"></span>Obligatoire</span>
-      </div>
-    </div>
-
-    <div class="info">
-      <b>Stockage :</b> 100 Mo maximum au total. Supprimez des photos depuis l'onglet Explorer pour liberer de la place.<br>
-      <b>Donnees :</b> vos parametres de censure sont dans des cookies (1 an). Les photos sont stockees dans IndexedDB sur cet appareil.
-    </div>
-  </section>
-</main>
-
-<div class="modal" id="modal">
-  <button class="mclose" id="mclose" type="button">X</button>
-  <img id="mimg" alt="">
-</div>
-
-<div class="modal" id="confirm">
-  <div class="cfbox">
-    <h3>Supprimer cette photo ?</h3>
-    <p id="cfMsg">Cette action est definitive.</p>
-    <div class="cfbtns">
-      <button class="btn" id="cfNo" type="button">Annuler</button>
-      <button class="btn dng" id="cfYes" type="button">Supprimer</button>
-    </div>
+<!-- 2. LOGIN -->
+<div class="center hide" id="loginScreen">
+  <div class="box">
+    <h2>Connexion</h2>
+    <p>Connectez-vous avec Discord pour acceder a post.it</p>
+    <button class="btn discord" id="discordLogin" type="button">Se connecter avec Discord</button>
+    <p class="err" id="loginError"></p>
   </div>
 </div>
 
-<div class="toasts" id="toasts"></div>
+<!-- 3. CHARGEMENT -->
+<div class="center hide" id="loadingScreen">
+  <div class="box" style="border:none;background:transparent;">
+    <span class="sp"></span>
+    <p style="margin-top:14px;color:#666;">Connexion en cours...</p>
+  </div>
+</div>
 
+<!-- 4. SITE -->
+<div class="hide" id="site">
+  <header>
+    <div class="hd">
+      <div class="lg">post<span class="d">.</span>it</div>
+      <div class="usr" id="userBox"></div>
+    </div>
+  </header>
+  <main>
+    <h1>Bienvenue sur post.it</h1>
+    <p class="sub">Ton site est pret. Ajoute ici ta galerie, ton upload, tes filtres, etc.</p>
+    <div id="adminZone" class="hide" style="background:#161616;border:1px solid #ffb84d;border-radius:12px;padding:20px;margin-top:20px;">
+      <h3 style="color:#ffb84d;font-size:15px;margin-bottom:10px;">&#128081; Panneau Admin</h3>
+      <p style="font-size:13px;color:#a0a0a0;line-height:1.6;">Tu es connecte en tant qu'admin. C'est ici que tu pourras ajouter tes outils (suppression de posts, config, etc.).</p>
+      <p id="adminInfo" style="font-size:12px;color:#666;margin-top:12px;"></p>
+    </div>
+  </main>
+</div>
+
+<script src="Logging/auth.js"></script>
 <script>
 (function(){
   'use strict';
-
   function $(id){ return document.getElementById(id); }
-
-  // ============================================================
-  // CONSTANTES
-  // ============================================================
-  var COOKIE_DAYS = 365;
-  var AGE_COOKIE_DAYS = 30;
-  var STORAGE_LIMIT = 100 * 1024 * 1024;
-  var MAX_FILE_SIZE = 10 * 1024 * 1024;
-  var WARN_THRESHOLD = 0.75;
-  var DANGER_THRESHOLD = 0.90;
-
-  // ============================================================
-  // COOKIES
-  // ============================================================
-  function setCookie(name, value, days){
-    try {
-      var d = new Date();
-      var dur = (days || COOKIE_DAYS) * 24 * 60 * 60 * 1000;
-      d.setTime(d.getTime() + dur);
-      document.cookie = name + '=' + encodeURIComponent(value)
-        + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
-    } catch(e){}
-  }
-  function getCookie(name){
-    try {
-      var parts = document.cookie ? document.cookie.split(';') : [];
-      for (var i = 0; i < parts.length; i++){
-        var c = parts[i].trim();
-        if (c.indexOf(name + '=') === 0){
-          return decodeURIComponent(c.substring(name.length + 1));
-        }
-      }
-    } catch(e){}
-    return null;
-  }
-
-  // ============================================================
-  // INDEXEDDB
-  // ============================================================
-  var DB_NAME = 'postit_db';
-  var DB_VERSION = 1;
-  var STORE = 'photos';
-
-  function idbOpen(){
-    return new Promise(function(resolve, reject){
-      if (!window.indexedDB){ reject(new Error('IndexedDB non supporte')); return; }
-      var req = indexedDB.open(DB_NAME, DB_VERSION);
-      req.onupgradeneeded = function(e){
-        var db = e.target.result;
-        if (!db.objectStoreNames.contains(STORE)){
-          db.createObjectStore(STORE, { keyPath: 'id' });
-        }
-      };
-      req.onsuccess = function(){ resolve(req.result); };
-      req.onerror = function(){ reject(req.error); };
-    });
-  }
-  function idbGetAll(){
-    return idbOpen().then(function(db){
-      return new Promise(function(resolve, reject){
-        var tx = db.transaction(STORE, 'readonly');
-        var req = tx.objectStore(STORE).getAll();
-        req.onsuccess = function(){ resolve(req.result || []); };
-        req.onerror = function(){ reject(req.error); };
-      });
-    });
-  }
-  function idbPut(photo){
-    return idbOpen().then(function(db){
-      return new Promise(function(resolve, reject){
-        var tx = db.transaction(STORE, 'readwrite');
-        var req = tx.objectStore(STORE).put(photo);
-        req.onsuccess = function(){ resolve(); };
-        req.onerror = function(){ reject(req.error); };
-      });
-    });
-  }
-  function idbDelete(id){
-    return idbOpen().then(function(db){
-      return new Promise(function(resolve, reject){
-        var tx = db.transaction(STORE, 'readwrite');
-        var req = tx.objectStore(STORE).delete(id);
-        req.onsuccess = function(){ resolve(); };
-        req.onerror = function(){ reject(req.error); };
-      });
+  function show(id){
+    ['ageScreen','loginScreen','loadingScreen','site'].forEach(function(x){
+      $(x).classList.toggle('hide', x !== id);
     });
   }
 
-  // ============================================================
-  // ETAT
-  // ============================================================
-  var S = {
-    photos: [],
-    tab: 'browse',
-    q: '',
-    filter: 'all', // all | nsfw | gore | other
-    cens: { nsfw:false, gore:false, other:false, ia:true },
-    pending: null,
-    model: null,
-    modelLoading: false,
-    modelReady: false,
-    iaFailed: false,
-    currentModalId: null,
-    pendingDeleteId: null
-  };
-
-  // ============================================================
-  // UTILS
-  // ============================================================
-  function esc(s){
-    if (s == null) return '';
-    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function ago(ts){
-    if (!ts) return '';
-    var d = Date.now() - ts, s = Math.floor(d / 1000);
-    if (s < 60) return "a l'instant";
-    var m = Math.floor(s / 60); if (m < 60) return 'il y a ' + m + ' min';
-    var h = Math.floor(m / 60); if (h < 24) return 'il y a ' + h + ' h';
-    var j = Math.floor(h / 24); if (j < 7) return 'il y a ' + j + ' j';
-    try { return new Date(ts).toLocaleDateString('fr-FR', { day:'numeric', month:'short' }); }
-    catch(e){ return ''; }
-  }
-
-  function fmtBytes(b){
-    if (b < 1024) return b + ' o';
-    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' Ko';
-    return (b / (1024 * 1024)).toFixed(2) + ' Mo';
-  }
-
-  function toast(msg, type){
-    var wrap = $('toasts');
-    if (!wrap) return;
-    var el = document.createElement('div');
-    el.className = 'toast' + (type ? ' ' + type : '');
-    el.textContent = msg;
-    wrap.appendChild(el);
-    setTimeout(function(){
-      el.style.transition = 'opacity .3s, transform .3s';
-      el.style.opacity = '0';
-      el.style.transform = 'translateY(10px)';
-      setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 320);
-    }, type === 'w' || type === 'e' ? 5000 : 2800);
-  }
-
-  // ============================================================
-  // STOCKAGE
-  // ============================================================
-  function usage(){
-    var total = 0;
-    for (var i = 0; i < S.photos.length; i++){
-      total += (S.photos[i].dataUrl || '').length;
-    }
-    return total;
-  }
-
-  function updateStorageUI(){
-    var used = usage();
-    var pct = Math.min(100, (used / STORAGE_LIMIT) * 100);
-    var box = $('storage');
-    var txt = $('storageTxt');
-    var fill = $('storageFill');
-    if (!box || !txt || !fill) return;
-
-    txt.textContent = fmtBytes(used) + ' / 100 Mo';
-    fill.style.width = pct + '%';
-
-    box.classList.remove('warn', 'danger');
-    if (used >= STORAGE_LIMIT * DANGER_THRESHOLD) box.classList.add('danger');
-    else if (used >= STORAGE_LIMIT * WARN_THRESHOLD) box.classList.add('warn');
-  }
-
-  function hasSpaceFor(bytes){
-    return usage() + bytes <= STORAGE_LIMIT;
-  }
-
-  // ============================================================
-  // CENSURE
-  // ============================================================
-  function censored(p){
-    var c = S.cens;
-    if (p.nsfw && c.nsfw) return true;
-    if (p.gore && c.gore) return true;
-    if (p.other && c.other) return true;
-    if (p.aiFlag) return true;
-    return false;
-  }
-
-  // ============================================================
-  // NAVIGATION
-  // ============================================================
-  function go(tab){
-    S.tab = tab;
-    setCookie('postit_tab', tab);
-    var panes = ['browse', 'upload', 'settings'];
-    for (var i = 0; i < panes.length; i++){
-      var t = panes[i];
-      var pane = $('pane-' + t);
-      var tabEl = $('tab-' + t);
-      if (pane) pane.classList.toggle('on', t === tab);
-      if (tabEl) tabEl.classList.toggle('on', t === tab);
-    }
-    if (tab === 'browse'){ render(); updateStorageUI(); }
-  }
-
-  function setFilter(f){
-    S.filter = f;
-    setCookie('postit_filter', f);
-    var chips = document.querySelectorAll('.filter');
-    for (var i = 0; i < chips.length; i++){
-      chips[i].classList.toggle('on', chips[i].getAttribute('data-f') === f);
-    }
-    render();
-  }
-
-  // ============================================================
-  // RENDU
-  // ============================================================
-  function render(){
-    var grid = $('grid');
-    var empty = $('empty');
-    var ttl = $('ttl');
-    var sub = $('sub');
-    if (!grid) return;
-
-    var list = S.photos.slice();
-
-    // Filtre categorie
-    if (S.filter === 'nsfw'){
-      list = list.filter(function(p){ return p.nsfw; });
-    } else if (S.filter === 'gore'){
-      list = list.filter(function(p){ return p.gore; });
-    } else if (S.filter === 'other'){
-      list = list.filter(function(p){ return p.other; });
-    }
-
-    // Recherche
-    if (S.q){
-      var q = S.q;
-      list = list.filter(function(p){
-        if ((p.title || '').toLowerCase().indexOf(q) !== -1) return true;
-        if (p.tags){
-          for (var i = 0; i < p.tags.length; i++){
-            if (p.tags[i].toLowerCase().indexOf(q) !== -1) return true;
-          }
-        }
-        return false;
-      });
-    }
-
-    // Titre
-    var filterLabel = '';
-    if (S.filter === 'nsfw') filterLabel = 'NSFW';
-    else if (S.filter === 'gore') filterLabel = 'Gore';
-    else if (S.filter === 'other') filterLabel = 'Autres';
-
-    if (S.q){
-      ttl.textContent = 'Resultats : "' + S.q + '"' + (filterLabel ? ' - ' + filterLabel : '');
-    } else if (filterLabel){
-      ttl.textContent = filterLabel;
-    } else {
-      ttl.textContent = 'Toutes les photos';
-    }
-
-    list.sort(function(a, b){ return (b.date || 0) - (a.date || 0); });
-    sub.textContent = list.length + ' photo' + (list.length > 1 ? 's' : '');
-
-    if (!list.length){
-      grid.innerHTML = '';
-      if (empty){
-        empty.classList.remove('hide');
-        if (S.q){
-          empty.querySelector('.et').textContent = 'Aucun resultat';
-          empty.querySelector('.ed').textContent = 'Aucune photo ne correspond a "' + S.q + '".';
-        } else if (filterLabel){
-          empty.querySelector('.et').textContent = 'Aucune photo ' + filterLabel;
-          empty.querySelector('.ed').textContent = 'Aucune photo dans cette categorie pour l\'instant.';
-        } else {
-          empty.querySelector('.et').textContent = 'Aucune photo';
-          empty.querySelector('.ed').textContent = 'La galerie est vide. Uploadez la premiere photo !';
-        }
-      }
+  function initAge(){
+    if (PostItAuth.getAgeOk()){
+      startAuth();
       return;
     }
-    if (empty) empty.classList.add('hide');
+    show('ageScreen');
+    $('ageYes').addEventListener('click', function(){
+      PostItAuth.setAgeOk();
+      startAuth();
+    });
+    $('ageNo').addEventListener('click', function(){
+      window.location.replace('https://www.google.com');
+    });
+  }
 
-    var html = '';
-    for (var k = 0; k < list.length; k++){
-      var p = list[k];
-      var c = censored(p);
-      var badges = '';
-      if (p.nsfw) badges += '<span class="bg n">NSFW</span>';
-      if (p.gore) badges += '<span class="bg g">GORE</span>';
-      if (p.other) badges += '<span class="bg o">SENSIBLE</span>';
-      if (p.aiFlag) badges += '<span class="bg i">IA</span>';
-
-      html += '<div class="card" data-id="' + esc(p.id) + '">'
-        + '<button class="del" type="button" data-del="' + esc(p.id) + '" aria-label="Supprimer">&#10005;</button>'
-        + '<div class="ibox">'
-        +   '<img src="' + p.dataUrl + '" alt="' + esc(p.title) + '"' + (c ? ' class="cens"' : '') + '>'
-        +   (c ? '<div class="cov on"><div class="ic">&#128274;</div><div class="lb">Masque</div><div class="hx">Toucher pour voir</div></div>' : '')
-        + '</div>'
-        + '<div class="bgs">' + badges + '</div>'
-        + '<div class="bd">'
-        +   '<div class="tt">' + esc(p.title) + '</div>'
-        +   '<div class="mt">' + ago(p.date) + '</div>'
-        + '</div>'
-        + '</div>';
-    }
-    grid.innerHTML = html;
-
-    var cards = grid.querySelectorAll('.card');
-    for (var n = 0; n < cards.length; n++){
-      (function(card){
-        var id = card.getAttribute('data-id');
-        var box = card.querySelector('.ibox');
-        if (box){
-          box.addEventListener('click', function(){
-            var cov = box.querySelector('.cov.on');
-            if (cov){
-              cov.classList.remove('on');
-              var img = box.querySelector('img');
-              if (img) img.classList.remove('cens');
-              return;
-            }
-            openModal(id);
-          });
-        }
-      })(cards[n]);
-    }
-
-    var dels = grid.querySelectorAll('.del');
-    for (var d = 0; d < dels.length; d++){
-      (function(btn){
-        btn.addEventListener('click', function(e){
-          e.stopPropagation();
-          e.preventDefault();
-          askDelete(btn.getAttribute('data-del'));
+  function startAuth(){
+    if (PostItAuth.hasCallback()){
+      show('loadingScreen');
+      PostItAuth.handleCallback()
+        .then(function(){ showSite(); })
+        .catch(function(err){
+          show('loginScreen');
+          $('loginError').textContent = 'Erreur : ' + err.message;
         });
-      })(dels[d]);
-    }
-  }
-
-  // ============================================================
-  // MODAL LIGHTBOX
-  // ============================================================
-  function openModal(id){
-    var p = null;
-    for (var i = 0; i < S.photos.length; i++){
-      if (S.photos[i].id === id){ p = S.photos[i]; break; }
-    }
-    if (!p) return;
-    S.currentModalId = id;
-    var m = $('modal');
-    var img = $('mimg');
-    img.src = p.dataUrl;
-    img.alt = p.title || '';
-    img.className = censored(p) ? 'cens' : '';
-    m.classList.add('on');
-  }
-  function closeModal(){
-    S.currentModalId = null;
-    var m = $('modal');
-    if (m) m.classList.remove('on');
-  }
-
-  // ============================================================
-  // CONFIRM SUPPRESSION
-  // ============================================================
-  function askDelete(id){
-    var p = null;
-    for (var i = 0; i < S.photos.length; i++){
-      if (S.photos[i].id === id){ p = S.photos[i]; break; }
-    }
-    if (!p) return;
-    S.pendingDeleteId = id;
-    var size = (p.dataUrl || '').length;
-    $('cfMsg').textContent = '« ' + p.title + ' » sera supprimee definitivement. '
-      + fmtBytes(size) + ' seront liberes.';
-    $('confirm').classList.add('on');
-  }
-
-  function closeConfirm(){
-    S.pendingDeleteId = null;
-    var c = $('confirm');
-    if (c) c.classList.remove('on');
-  }
-
-  function doDelete(){
-    var id = S.pendingDeleteId;
-    closeConfirm();
-    if (!id) return;
-
-    idbDelete(id).then(function(){
-      var removed = 0;
-      S.photos = S.photos.filter(function(x){
-        if (x.id === id){ removed += (x.dataUrl || '').length; return false; }
-        return true;
-      });
-      if (S.currentModalId === id) closeModal();
-      render();
-      updateStorageUI();
-      toast('Photo supprimee. ' + fmtBytes(removed) + ' liberes.', 's');
-    }).catch(function(err){
-      console.warn('Erreur suppression:', err);
-      toast('Impossible de supprimer la photo.', 'e');
-    });
-  }
-
-  // ============================================================
-  // UPLOAD
-  // ============================================================
-  function handleFile(f){
-    if (!f || !f.type || f.type.indexOf('image/') !== 0){
-      toast('Format non supporte', 'e');
       return;
     }
-    if (f.size > MAX_FILE_SIZE){
-      toast('Image trop lourde (max 10 Mo)', 'e');
-      return;
-    }
-
-    var estimatedStored = Math.ceil(f.size * 1.37);
-    var remaining = STORAGE_LIMIT - usage();
-    if (estimatedStored > remaining){
-      toast('Limite d\'upload globale atteinte (100 Mo). '
-        + 'Il reste ' + fmtBytes(Math.max(0, remaining)) + '. '
-        + 'Supprimez des photos pour liberer de l\'espace.', 'e');
-      return;
-    }
-
-    var r = new FileReader();
-    r.onload = function(ev){
-      var dataUrl = ev.target.result;
-
-      if (!hasSpaceFor(dataUrl.length)){
-        toast('Limite d\'upload globale atteinte (100 Mo). '
-          + 'Cette image ne peut pas etre ajoutee. '
-          + 'Supprimez des photos pour liberer de l\'espace.', 'e');
-        return;
-      }
-
-      S.pending = {
-        fileName: f.name,
-        dataUrl: dataUrl,
-        title: f.name.replace(/\.[^.]+$/, ''),
-        nsfw: false,
-        gore: false,
-        other: false,
-        aiFlag: false
-      };
-      showPreview();
-    };
-    r.onerror = function(){ toast('Erreur de lecture', 'e'); };
-    r.readAsDataURL(f);
-  }
-
-  function showPreview(){
-    var p = S.pending;
-    if (!p) return;
-    $('pimg').src = p.dataUrl;
-    $('pname').textContent = p.fileName + ' (' + fmtBytes(p.dataUrl.length) + ')';
-    $('ptitle').value = p.title;
-    var pills = document.querySelectorAll('.pil');
-    for (var i = 0; i < pills.length; i++) pills[i].classList.remove('on');
-    $('pv').classList.add('on');
-    analyzePending();
-  }
-
-  function cancelPreview(){
-    S.pending = null;
-    var pv = $('pv');
-    if (pv) pv.classList.remove('on');
-  }
-
-  function publish(){
-    var p = S.pending;
-    if (!p) return;
-
-    if (!hasSpaceFor(p.dataUrl.length)){
-      toast('Limite de 100 Mo depassee. Supprimez des photos.', 'e');
-      return;
-    }
-
-    var tEl = $('ptitle');
-    var title = (tEl && tEl.value.trim()) || 'Sans titre';
-
-    var photo = {
-      id: 'u' + Date.now() + Math.floor(Math.random() * 100000),
-      title: title,
-      dataUrl: p.dataUrl,
-      tags: [],
-      nsfw: !!p.nsfw,
-      gore: !!p.gore,
-      other: !!p.other,
-      aiFlag: !!p.aiFlag,
-      date: Date.now()
-    };
-
-    S.photos.unshift(photo);
-
-    idbPut(photo).then(function(){
-      cancelPreview();
-      go('browse');
-      updateStorageUI();
-      toast('Photo publiee. ' + fmtBytes(photo.dataUrl.length) + ' utilises.', 's');
-    }).catch(function(){
-      cancelPreview();
-      go('browse');
-      updateStorageUI();
-      toast('Photo publiee (non persistee)', 'w');
+    var user = PostItAuth.getUser();
+    if (user){ showSite(); return; }
+    show('loginScreen');
+    $('discordLogin').addEventListener('click', function(){
+      PostItAuth.login();
     });
   }
 
-  // ============================================================
-  // CHARGEMENT
-  // ============================================================
-  function loadPhotos(){
-    return idbGetAll().then(function(arr){
-      arr.sort(function(a, b){ return (b.date || 0) - (a.date || 0); });
-      S.photos = arr;
-      return arr;
-    }).catch(function(err){
-      console.warn('IndexedDB indisponible :', err);
-      S.photos = [];
-      return [];
+  function showSite(){
+    var user = PostItAuth.getUser();
+    if (!user) return;
+    show('site');
+
+    var av = user.avatar
+      ? 'https://cdn.discordapp.com/avatars/' + user.id + '/' + user.avatar + '.png?size=64'
+      : 'https://cdn.discordapp.com/embed/avatars/' + ((parseInt(user.id,10) >> 22) % 6) + '.png';
+
+    $('userBox').innerHTML =
+      '<img src="' + av + '" alt="">' +
+      '<span class="nm">' + user.username + '</span>' +
+      (user.isAdmin ? '<span class="bdg">ADMIN</span>' : '') +
+      '<button class="lo" id="logoutBtn" type="button">Quitter</button>';
+
+    $('logoutBtn').addEventListener('click', function(){
+      PostItAuth.logout();
+      window.location.reload();
     });
-  }
 
-  // ============================================================
-  // IA
-  // ============================================================
-  function loadScript(src){
-    return new Promise(function(resolve, reject){
-      var s = document.createElement('script');
-      s.src = src;
-      s.async = true;
-      s.onload = resolve;
-      s.onerror = function(){ reject(new Error('fail')); };
-      document.head.appendChild(s);
-    });
-  }
-
-  function loadModel(){
-    if (S.modelReady || S.modelLoading || S.iaFailed) return;
-    S.modelLoading = true;
-    Promise.resolve()
-      .then(function(){ return loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js'); })
-      .then(function(){ return loadScript('https://cdn.jsdelivr.net/npm/nsfwjs@4.1.0/dist/nsfwjs.min.js'); })
-      .then(function(){
-        if (typeof window.nsfwjs === 'undefined') throw new Error('manquant');
-        return window.nsfwjs.load();
-      })
-      .then(function(model){ S.model = model; S.modelReady = true; })
-      .catch(function(err){
-        console.warn('IA indisponible :', err);
-        S.iaFailed = true;
-      })
-      .then(function(){
-        S.modelLoading = false;
-        if (S.pending && S.modelReady) analyzePending();
-      });
-  }
-
-  function classify(dataUrl){
-    return new Promise(function(resolve, reject){
-      if (!S.model) return reject(new Error('no model'));
-      var img = new Image();
-      img.onload = function(){
-        S.model.classify(img).then(function(preds){
-          var get = function(n){
-            for (var i = 0; i < preds.length; i++) if (preds[i].className === n) return preds[i].probability;
-            return 0;
-          };
-          var porn = get('Porn'), hentai = get('Hentai'), sexy = get('Sexy');
-          resolve({ isNsfw: porn > 0.5 || hentai > 0.5 || sexy > 0.75 });
-        }).catch(reject);
-      };
-      img.onerror = function(){ reject(new Error('img')); };
-      img.src = dataUrl;
-    });
-  }
-
-  function analyzePending(){
-    var p = S.pending;
-    if (!p) return;
-    if (!S.modelReady){
-      if (!S.iaFailed && !S.modelLoading) loadModel();
-      return;
+    if (user.isAdmin){
+      $('adminZone').classList.remove('hide');
+      $('adminInfo').textContent = 'Ton ID Discord : ' + user.id;
     }
-    var ind = $('iaInd'), txt = $('iaTxt');
-    if (ind) ind.classList.add('on');
-    if (txt) txt.textContent = 'Analyse IA...';
-    classify(p.dataUrl).then(function(r){
-      if (r.isNsfw && !p.nsfw){
-        p.nsfw = true;
-        var pill = document.querySelector('.pil[data-t="nsfw"]');
-        if (pill) pill.classList.add('on');
-        toast('IA : contenu adulte detecte, NSFW coche', 'w');
-      }
-      if (txt) txt.textContent = 'Analyse terminee';
-    }).catch(function(){
-      if (txt) txt.textContent = 'Analyse impossible';
-    }).then(function(){
-      setTimeout(function(){ if (ind) ind.classList.remove('on'); }, 1200);
-    });
-  }
-
-  // ============================================================
-  // AGE GATE
-  // ============================================================
-  function setupAgeGate(){
-    var gate = $('agegate');
-    var yes = $('ageYes');
-    var no = $('ageNo');
-    if (!gate || !yes || !no) return;
-
-    // Si deja confirme, cacher immediatement
-    if (getCookie('postit_age_ok') === '1'){
-      gate.classList.add('hide');
-    }
-
-    yes.addEventListener('click', function(){
-      setCookie('postit_age_ok', '1', AGE_COOKIE_DAYS);
-      gate.classList.add('hide');
-    });
-
-    no.addEventListener('click', function(){
-      // Redirection immediate
-      try { window.location.replace('https://www.google.com'); }
-      catch(e){ window.location.href = 'https://www.google.com'; }
-    });
-  }
-
-  // ============================================================
-  // INIT
-  // ============================================================
-  function init(){
-    // Age gate en premier
-    setupAgeGate();
-
-    // Cookies de censure
-    S.cens.nsfw = getCookie('postit_cens_nsfw') === '1';
-    S.cens.gore = getCookie('postit_cens_gore') === '1';
-    S.cens.other = getCookie('postit_cens_other') === '1';
-    S.cens.ia = true;
-
-    if ($('cNsfw')) $('cNsfw').checked = S.cens.nsfw;
-    if ($('cGore')) $('cGore').checked = S.cens.gore;
-    if ($('cOther')) $('cOther').checked = S.cens.other;
-
-    // Filtre memorise
-    var savedFilter = getCookie('postit_filter');
-    if (savedFilter === 'nsfw' || savedFilter === 'gore' || savedFilter === 'other' || savedFilter === 'all'){
-      S.filter = savedFilter;
-    }
-    var chips = document.querySelectorAll('.filter');
-    for (var i = 0; i < chips.length; i++){
-      chips[i].classList.toggle('on', chips[i].getAttribute('data-f') === S.filter);
-    }
-
-    // Onglets
-    var tabs = ['browse','upload','settings'];
-    for (var t = 0; t < tabs.length; t++){
-      (function(tn){
-        var el = $('tab-' + tn);
-        if (el) el.addEventListener('click', function(){ go(tn); });
-      })(tabs[t]);
-    }
-
-    // Logo + gear
-    var logo = $('logoBtn');
-    if (logo) logo.addEventListener('click', function(e){ e.preventDefault(); go('browse'); });
-    var gear = $('gearBtn');
-    if (gear) gear.addEventListener('click', function(){ go('settings'); });
-
-    // Filtres
-    var filterBtns = document.querySelectorAll('.filter');
-    for (var f = 0; f < filterBtns.length; f++){
-      (function(btn){
-        btn.addEventListener('click', function(){
-          setFilter(btn.getAttribute('data-f'));
-        });
-      })(filterBtns[f]);
-    }
-
-    // Recherche
-    var q = $('q');
-    var qt;
-    if (q) q.addEventListener('input', function(){
-      clearTimeout(qt);
-      qt = setTimeout(function(){
-        S.q = q.value.trim().toLowerCase();
-        if (S.tab !== 'browse') go('browse');
-        else render();
-      }, 180);
-    });
-
-    // Fichier
-    var file = $('file');
-    if (file) file.addEventListener('change', function(){
-      if (file.files && file.files[0]) handleFile(file.files[0]);
-      file.value = '';
-    });
-
-    // Boutons upload
-    var pub = $('pubBtn');
-    if (pub) pub.addEventListener('click', publish);
-    var cxl = $('cxlBtn');
-    if (cxl) cxl.addEventListener('click', cancelPreview);
-
-    // Pills
-    var pills = document.querySelectorAll('.pil');
-    for (var j = 0; j < pills.length; j++){
-      (function(el){
-        el.addEventListener('click', function(){
-          var on = el.classList.toggle('on');
-          if (!S.pending) return;
-          var tp = el.getAttribute('data-t');
-          if (tp) S.pending[tp] = on;
-        });
-      })(pills[j]);
-    }
-
-    // Parametres
-    var sett = [
-      { id:'cNsfw', key:'nsfw', cookie:'postit_cens_nsfw' },
-      { id:'cGore', key:'gore', cookie:'postit_cens_gore' },
-      { id:'cOther', key:'other', cookie:'postit_cens_other' }
-    ];
-    for (var s = 0; s < sett.length; s++){
-      (function(k){
-        var el = $(k.id);
-        if (!el) return;
-        el.addEventListener('change', function(){
-          S.cens[k.key] = el.checked;
-          setCookie(k.cookie, el.checked ? '1' : '0');
-          render();
-        });
-      })(sett[s]);
-    }
-
-    // Modal lightbox
-    var mc = $('mclose');
-    if (mc) mc.addEventListener('click', closeModal);
-    var modal = $('modal');
-    if (modal) modal.addEventListener('click', function(e){
-      if (e.target === modal) closeModal();
-    });
-
-    // Modal confirm
-    var cfNo = $('cfNo');
-    if (cfNo) cfNo.addEventListener('click', closeConfirm);
-    var cfYes = $('cfYes');
-    if (cfYes) cfYes.addEventListener('click', doDelete);
-    var confirmEl = $('confirm');
-    if (confirmEl) confirmEl.addEventListener('click', function(e){
-      if (e.target === confirmEl) closeConfirm();
-    });
-
-    // Echap
-    document.addEventListener('keydown', function(e){
-      if (e.key === 'Escape'){
-        if ($('confirm').classList.contains('on')) closeConfirm();
-        else closeModal();
-      }
-    });
-
-    // Charger photos
-    loadPhotos().then(function(){
-      render();
-      updateStorageUI();
-      var lastTab = getCookie('postit_tab');
-      if (lastTab === 'upload' || lastTab === 'settings' || lastTab === 'browse'){
-        go(lastTab);
-      }
-    });
-
-    // IA en arriere-plan
-    setTimeout(function(){ try { loadModel(); } catch(e){} }, 2000);
   }
 
   if (document.readyState === 'loading'){
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', initAge);
   } else {
-    init();
+    initAge();
   }
 })();
 </script>
