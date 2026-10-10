@@ -5,29 +5,97 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
 <title>post.it</title>
 <style>
-:root{--bg:#0a0a0a;--card:#161616;--in:#1c1c1c;--bd:#262626;--bh:#383838;--tx:#ededed;--dim:#a0a0a0;--mut:#666;--ac:#ededed;--inv:#0a0a0a;--dg:#ff4d4d;--wg:#ffb84d;--ok:#4dff88;}
+:root{--bg:#0a0a0a;--card:#161616;--in:#1c1c1c;--bd:#262626;--bh:#383838;--tx:#ededed;--dim:#a0a0a0;--mut:#666;--ac:#ededed;--inv:#0a0a0a;--dg:#ff4d4d;--wg:#ffb84d;--ok:#4dff88;--discord:#5865f2;--discord-h:#4752c4;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
-body{background:#0a0a0a;color:#ededed;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.5;min-height:100vh;}
+body{background:#0a0a0a;color:#ededed;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.5;min-height:100vh;overflow-x:hidden;}
 .hide{display:none !important;}
-.center{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;}
-.box{background:#161616;border:1px solid #262626;border-radius:14px;padding:26px;max-width:420px;width:100%;text-align:center;}
-.box h2{font-size:19px;font-weight:800;margin-bottom:12px;}
-.box p{font-size:13px;color:#a0a0a0;line-height:1.6;margin-bottom:16px;}
-.warn{color:#ffb84d;font-weight:700;}
-.dng{color:#ff4d4d;font-weight:700;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:46px;padding:0 20px;border-radius:8px;border:1px solid #262626;background:#161616;color:#ededed;font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;text-decoration:none;-webkit-appearance:none;appearance:none;}
-.btn:active{transform:scale(.97);}
-.btn.p{background:#ededed;color:#0a0a0a;border-color:#ededed;font-weight:700;}
-.btn.discord{background:#5865f2;color:#fff;border-color:#5865f2;font-weight:700;}
-.btn.discord:active{background:#4752c4;}
-.btn.dng{background:#ff4d4d;color:#fff;border-color:#ff4d4d;font-weight:700;}
-.btn.full{width:100%;}
-.agebtns{display:flex;flex-direction:column;gap:8px;margin-top:20px;}
-.agebtns .btn{height:46px;}
-.sp{width:26px;height:26px;border:3px solid #262626;border-top-color:#a0a0a0;border-radius:50%;animation:sp .6s linear infinite;display:inline-block;}
-@keyframes sp{to{transform:rotate(360deg);}}
 
-/* HEADER */
+/* ============================================================
+   ECRANS PLEIN (age gate, login, loading)
+   ============================================================ */
+.screen{position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;padding:20px;background:#0a0a0a;overflow-y:auto;z-index:100;}
+.screen::before{content:'';position:absolute;top:-40%;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(88,101,242,.10) 0%,transparent 70%);pointer-events:none;filter:blur(30px);}
+.screen.age::before{background:radial-gradient(circle,rgba(255,184,77,.10) 0%,transparent 70%);}
+.inner{position:relative;max-width:440px;width:100%;z-index:1;animation:fadeUp .5s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+
+/* Logo entete d'ecran */
+.brand{text-align:center;margin-bottom:26px;}
+.brand-logo{font-size:38px;font-weight:800;letter-spacing:-1.5px;line-height:1;margin-bottom:8px;}
+.brand-logo .dot{color:#444;}
+.brand-sub{font-size:12px;color:#666;font-weight:500;letter-spacing:.4px;text-transform:uppercase;}
+
+/* Carte */
+.pcard{background:#131313;border:1px solid #262626;border-radius:20px;padding:32px 26px;box-shadow:0 30px 80px rgba(0,0,0,.7),inset 0 1px 0 rgba(255,255,255,.03);position:relative;overflow:hidden;}
+.pcard.age{border-color:#2e2620;background:linear-gradient(180deg,#15130f 0%,#131313 100%);}
+.pcard.age::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#ffb84d,transparent);}
+
+/* Icone entete */
+.icon-circle{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px;line-height:1;position:relative;}
+.icon-circle.warn{background:linear-gradient(135deg,rgba(255,184,77,.2),rgba(255,140,0,.1));border:1px solid rgba(255,184,77,.35);box-shadow:0 0 40px rgba(255,184,77,.15);}
+.icon-circle.discord{background:linear-gradient(135deg,var(--discord),#7289da);box-shadow:0 0 40px rgba(88,101,242,.35);}
+.icon-circle.discord svg{width:36px;height:36px;fill:#fff;}
+.icon-circle.warn::after{content:'';position:absolute;inset:-6px;border-radius:50%;border:1px solid rgba(255,184,77,.15);animation:pulse 2.4s ease-in-out infinite;}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.6;}50%{transform:scale(1.12);opacity:0;}}
+
+/* Titre */
+.pcard h1{font-size:22px;font-weight:800;text-align:center;letter-spacing:-.4px;margin-bottom:10px;line-height:1.25;}
+.pcard .lead{font-size:14px;color:#a0a0a0;text-align:center;line-height:1.65;margin-bottom:20px;}
+.pcard .lead .hl-warn{color:#ffb84d;font-weight:700;}
+.pcard .lead .hl-dng{color:#ff4d4d;font-weight:700;}
+
+/* Liste de tags (avertissement) */
+.tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:22px;}
+.tags span{font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;padding:5px 11px;border-radius:99px;border:1px solid;}
+.tags .t-nsfw{color:#ff4d4d;border-color:rgba(255,77,77,.4);background:rgba(255,77,77,.08);}
+.tags .t-gore{color:#ff8c00;border-color:rgba(255,140,0,.4);background:rgba(255,140,0,.08);}
+.tags .t-othr{color:#a0a0a0;border-color:rgba(160,160,160,.3);background:rgba(160,160,160,.06);}
+.tags .t-18{color:#ffb84d;border-color:rgba(255,184,77,.4);background:rgba(255,184,77,.08);}
+
+/* Divider */
+.divider{height:1px;background:linear-gradient(90deg,transparent,#262626,transparent);margin:20px 0;}
+
+/* Note legale */
+.legal{font-size:11px;color:#666;text-align:center;line-height:1.55;padding:12px;background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;margin-bottom:20px;}
+.legal b{color:#a0a0a0;font-weight:600;}
+
+/* Boutons */
+.btns{display:flex;flex-direction:column;gap:10px;}
+.btn{display:flex;align-items:center;justify-content:center;gap:9px;height:52px;padding:0 22px;border-radius:12px;border:1px solid #262626;background:#161616;color:#ededed;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;text-decoration:none;-webkit-appearance:none;appearance:none;transition:all .18s;position:relative;overflow:hidden;}
+.btn:active{transform:scale(.98);}
+.btn.full{width:100%;}
+.btn svg{width:20px;height:20px;flex-shrink:0;}
+
+.btn.enter{background:linear-gradient(135deg,#ededed,#d4d4d4);color:#0a0a0a;border-color:transparent;font-weight:700;box-shadow:0 6px 24px rgba(237,237,237,.15);}
+.btn.enter:active{background:#fff;}
+
+.btn.discord{background:var(--discord);color:#fff;border-color:transparent;font-weight:700;box-shadow:0 6px 24px rgba(88,101,242,.35);}
+.btn.discord:active{background:var(--discord-h);box-shadow:0 4px 16px rgba(88,101,242,.4);}
+.btn.discord svg{fill:#fff;}
+
+.btn.ghost{background:transparent;color:#666;border-color:transparent;font-weight:500;font-size:12px;height:38px;}
+.btn.ghost:active{color:#a0a0a0;background:#111;}
+
+/* Age gate - bouton refuse discret */
+.btn.deny{background:transparent;color:#666;border-color:transparent;font-weight:500;font-size:12px;height:44px;}
+.btn.deny:active{color:#a0a0a0;}
+
+/* Loader */
+.loader{width:44px;height:44px;border:3px solid #1f1f1f;border-top-color:#5865f2;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.sp{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+
+/* Erreur */
+.err{color:#ff4d4d;font-size:12px;margin-top:14px;text-align:center;line-height:1.5;padding:10px 12px;background:rgba(255,77,77,.08);border:1px solid rgba(255,77,77,.2);border-radius:8px;}
+.err:empty{display:none;}
+
+/* Pied de carte */
+.foot{text-align:center;font-size:11px;color:#444;margin-top:18px;line-height:1.5;}
+.foot a{color:#666;text-decoration:none;}
+
+/* ============================================================
+   SITE
+   ============================================================ */
 header{position:sticky;top:0;z-index:50;background:rgba(10,10,10,.94);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid #262626;}
 .hd{max-width:1200px;margin:0 auto;padding:0 14px;height:56px;display:flex;align-items:center;gap:10px;}
 .lg{font-size:17px;font-weight:800;letter-spacing:-.5px;cursor:pointer;user-select:none;-webkit-user-select:none;padding:4px;}
@@ -42,33 +110,30 @@ header{position:sticky;top:0;z-index:50;background:rgba(10,10,10,.94);backdrop-f
 
 main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 
-/* TABS */
 .tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid #262626;overflow-x:auto;scrollbar-width:none;}
 .tabs::-webkit-scrollbar{display:none;}
-.tab{padding:11px 14px;font-size:14px;font-weight:500;color:#666;background:none;border:none;font-family:inherit;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .15s;}
+.tab{padding:11px 14px;font-size:14px;font-weight:500;color:#666;background:none;border:none;font-family:inherit;cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;margin-bottom:-1px;}
 .tab.on{color:#ededed;border-bottom-color:#ededed;}
 .pane{display:none;}
 .pane.on{display:block;}
 .sh{margin-bottom:14px;}
-.sh h2{font-size:16px;font-weight:700;letter-spacing:-.2px;}
+.sh h2{font-size:16px;font-weight:700;}
 .sh p{font-size:12px;color:#666;margin-top:2px;}
 
-/* FILTRES */
 .filters{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
 .filters::-webkit-scrollbar{display:none;}
-.filter{padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:.3px;color:#a0a0a0;background:#161616;border:1.5px solid #262626;border-radius:99px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s;user-select:none;-webkit-user-select:none;}
+.filter{padding:8px 16px;font-size:12px;font-weight:700;color:#a0a0a0;background:#161616;border:1.5px solid #262626;border-radius:99px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s;}
 .filter:active{transform:scale(.96);}
 .filter.on{background:#ededed;color:#0a0a0a;border-color:#ededed;}
 .filter.f-nsfw.on{background:#ff4d4d;border-color:#ff4d4d;color:#fff;}
 .filter.f-gore.on{background:#ff8c00;border-color:#ff8c00;color:#fff;}
 .filter.f-other.on{background:#a0a0a0;border-color:#a0a0a0;color:#fff;}
 
-/* STORAGE */
 .storage{padding:12px 14px;background:#111;border:1px solid #262626;border-radius:10px;margin-bottom:14px;}
-.storage .lab{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#a0a0a0;margin-bottom:7px;font-weight:500;gap:8px;}
+.storage .lab{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#a0a0a0;margin-bottom:7px;font-weight:500;}
 .storage .lab b{color:#ededed;font-weight:600;font-variant-numeric:tabular-nums;}
 .storage .bar{height:6px;background:#1c1c1c;border-radius:99px;overflow:hidden;}
-.storage .fill{height:100%;background:linear-gradient(90deg,#4dff88,#4dd0ff);border-radius:99px;transition:width .35s ease,background .3s;width:0;}
+.storage .fill{height:100%;background:linear-gradient(90deg,#4dff88,#4dd0ff);border-radius:99px;transition:width .35s ease;width:0;}
 .storage.warn{border-color:rgba(255,184,77,.4);}
 .storage.warn .fill{background:linear-gradient(90deg,#ffb84d,#ff8c00);}
 .storage.warn .lab b{color:#ffb84d;}
@@ -76,7 +141,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .storage.danger .fill{background:linear-gradient(90deg,#ff4d4d,#ff2d2d);}
 .storage.danger .lab b{color:#ff4d4d;}
 
-/* GRILLE */
 .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
 @media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr);}}
 @media(min-width:900px){.grid{grid-template-columns:repeat(4,1fr);}}
@@ -97,7 +161,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .bg.i{background:#ffb84d;color:#000;}
 .bg.mine{background:rgba(77,208,255,.9);color:#000;}
 .bg.adm{background:rgba(255,77,77,.9);color:#fff;}
-.del{position:absolute;top:6px;right:6px;z-index:4;width:28px;height:28px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.18);border-radius:50%;color:#fff;font-size:13px;font-family:inherit;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
+.del{position:absolute;top:6px;right:6px;z-index:4;width:28px;height:28px;background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.18);border-radius:50%;color:#fff;font-size:13px;font-family:inherit;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);}
 .del:active{transform:scale(.9);background:rgba(255,77,77,.95);border-color:#ff4d4d;}
 .bd{padding:10px 12px;}
 .tt{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
@@ -109,11 +173,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .empty .et{font-size:15px;font-weight:600;color:#a0a0a0;margin-bottom:6px;}
 .empty .ed{font-size:13px;max-width:320px;margin:0 auto;line-height:1.6;}
 
-/* UPLOAD */
-.uz{display:block;border:1.5px dashed #262626;border-radius:12px;padding:40px 20px;text-align:center;background:#111;cursor:pointer;text-decoration:none;}
+.uz{display:block;border:1.5px dashed #262626;border-radius:12px;padding:40px 20px;text-align:center;background:#111;cursor:pointer;}
 .uz:active{border-color:#ededed;}
-.uz .ui{font-size:32px;opacity:.5;margin-bottom:10px;color:#a0a0a0;}
-.uz .ut{font-size:15px;font-weight:600;margin-bottom:5px;color:#ededed;}
+.uz .ui{font-size:32px;opacity:.5;margin-bottom:10px;}
+.uz .ut{font-size:15px;font-weight:600;margin-bottom:5px;}
 .uz .ud{font-size:12px;color:#666;margin-bottom:16px;}
 .pv{display:none;margin-top:16px;background:#161616;border:1px solid #262626;border-radius:12px;padding:16px;}
 .pv.on{display:block;}
@@ -122,11 +185,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .fld{margin-bottom:14px;}
 .fld label{display:block;font-size:12px;font-weight:600;color:#a0a0a0;margin-bottom:6px;}
 .fld input{width:100%;height:42px;background:#1c1c1c;border:1px solid #262626;border-radius:8px;color:#ededed;padding:0 12px;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;}
-.fld input:focus{border-color:#383838;}
 .pils{display:flex;flex-wrap:wrap;gap:8px;}
 .pil{display:inline-flex;align-items:center;gap:7px;padding:9px 14px;background:#1c1c1c;border:1.5px solid #262626;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;user-select:none;-webkit-user-select:none;color:#a0a0a0;}
 .pil:active{transform:scale(.96);}
-.pil .dot{width:8px;height:8px;border-radius:50%;background:#262626;flex-shrink:0;}
+.pil .dot{width:8px;height:8px;border-radius:50%;background:#262626;}
 .pil[data-t="nsfw"].on{border-color:#ff4d4d;background:rgba(255,77,77,.14);color:#fff;}
 .pil[data-t="nsfw"].on .dot{background:#ff4d4d;}
 .pil[data-t="gore"].on{border-color:#ffb84d;background:rgba(255,184,77,.14);color:#fff;}
@@ -134,11 +196,13 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .pil[data-t="other"].on{border-color:#a0a0a0;background:rgba(160,160,160,.14);color:#fff;}
 .pil[data-t="other"].on .dot{background:#a0a0a0;}
 .acts{display:flex;gap:8px;margin-top:16px;}
-.acts .btn{flex:1;}
+.acts .btn{flex:1;height:46px;}
 .ia{display:none;align-items:center;gap:8px;font-size:11px;color:#666;padding:8px 12px;background:#111;border:1px solid #262626;border-radius:99px;margin-top:12px;}
 .ia.on{display:inline-flex;}
 
-/* PARAMETRES */
+.btn.prim{background:#ededed;color:#0a0a0a;border-color:#ededed;font-weight:700;}
+.btn.dng{background:#ff4d4d;color:#fff;border-color:#ff4d4d;font-weight:700;}
+
 .settings{background:#161616;border:1px solid #262626;border-radius:12px;overflow:hidden;}
 .settings h3{font-size:14px;font-weight:700;padding:14px 16px;border-bottom:1px solid #262626;}
 .row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid #262626;}
@@ -155,29 +219,22 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .mand{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:rgba(77,255,136,.12);border:1px solid rgba(77,255,136,.35);color:#4dff88;}
 .mand .dot{width:6px;height:6px;border-radius:50%;background:#4dff88;}
 .info{font-size:11px;color:#666;margin-top:10px;line-height:1.5;padding:12px;background:#111;border:1px solid #262626;border-radius:8px;}
-.info b{color:#a0a0a0;font-weight:600;}
 
-/* ADMIN */
 .adm{background:#161616;border:1px solid #ffb84d;border-radius:12px;padding:18px;margin-bottom:14px;}
-.adm h3{color:#ffb84d;font-size:15px;font-weight:800;margin-bottom:14px;letter-spacing:-.2px;}
+.adm h3{color:#ffb84d;font-size:15px;font-weight:800;margin-bottom:14px;}
 .stat{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;}
 .stat .s{background:#111;border:1px solid #262626;border-radius:8px;padding:12px;}
-.stat .s .v{font-size:18px;font-weight:800;color:#ededed;font-variant-numeric:tabular-nums;}
+.stat .s .v{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;}
 .stat .s .l{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.4px;margin-top:2px;font-weight:600;}
-.adm .fld{margin-bottom:14px;}
-.adm .fld label{display:block;font-size:12px;font-weight:600;color:#a0a0a0;margin-bottom:6px;}
-.adm .fld input{width:100%;height:42px;background:#1c1c1c;border:1px solid #262626;border-radius:8px;color:#ededed;padding:0 12px;font-size:15px;font-family:inherit;outline:none;-webkit-appearance:none;}
 .adm .fld input:focus{border-color:#ffb84d;}
 .adm .hint{font-size:11px;color:#666;margin-top:4px;line-height:1.4;}
 #admStatus{font-size:12px;margin-top:10px;font-weight:600;}
 
-/* MODAL */
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:16px;}
 .modal.on{display:flex;}
 .modal img{max-width:100%;max-height:80vh;border-radius:12px;display:block;object-fit:contain;}
 .modal img.cens{filter:blur(22px) brightness(.5);}
 .mclose{position:absolute;top:16px;right:16px;width:40px;height:40px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50%;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;}
-
 .cfbox{background:#161616;border:1px solid #262626;border-radius:14px;padding:22px;max-width:400px;width:100%;}
 .cfbox h3{font-size:16px;font-weight:700;margin-bottom:8px;}
 .cfbox p{font-size:13px;color:#a0a0a0;line-height:1.55;margin-bottom:18px;word-break:break-word;}
@@ -190,43 +247,113 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .toast.s{border-left:3px solid #4dff88;}
 .toast.e{border-left:3px solid #ff4d4d;}
 .toast.w{border-left:3px solid #ffb84d;}
-.err{color:#ff4d4d;font-size:12px;margin-top:14px;}
 </style>
 </head>
 <body>
 
-<!-- 1. AGE GATE -->
-<div class="center" id="ageScreen">
-  <div class="box">
-    <h2>&#9888;&#65039; Avertissement</h2>
-    <p><span class="warn">post.it</span> peut contenir du contenu <span class="dng">NSFW</span>, <span class="dng">Gore</span> et d'autres contenus choquants.</p>
-    <p>En continuant, vous certifiez avoir <span class="warn">18 ans ou plus</span>.</p>
-    <div class="agebtns">
-      <button class="btn p" id="ageYes" type="button">J'ai 18 ans ou plus</button>
-      <button class="btn" id="ageNo" type="button">J'ai moins de 18 ans</button>
+<!-- ============================================================
+     1. AGE GATE (avant tout)
+     ============================================================ -->
+<div class="screen age" id="ageScreen">
+  <div class="inner">
+    <div class="brand">
+      <div class="brand-logo">post<span class="dot">.</span>it</div>
+      <div class="brand-sub">Partage de photos</div>
     </div>
+
+    <div class="pcard age">
+      <div class="icon-circle warn">&#9888;&#65039;</div>
+      <h1>Contenu sensible</h1>
+      <p class="lead">
+        <span class="hl-warn">post.it</span> est un espace ouvert qui peut contenir
+        du contenu <span class="hl-dng">choquant</span>, explicite ou violent.
+      </p>
+
+      <div class="tags">
+        <span class="t-nsfw">NSFW</span>
+        <span class="t-gore">Gore</span>
+        <span class="t-othr">Autres</span>
+        <span class="t-18">18+</span>
+      </div>
+
+      <div class="legal">
+        En continuant, tu certifies avoir <b>18 ans ou plus</b> et consentir
+        a voir ce type de contenu. Si tu as moins de 18 ans, tu vas etre
+        redirige vers google.com.
+      </div>
+
+      <div class="btns">
+        <button class="btn enter full" id="ageYes" type="button">
+          J'ai 18 ans ou plus &mdash; Entrer
+        </button>
+        <button class="btn deny" id="ageNo" type="button">J'ai moins de 18 ans</button>
+      </div>
+    </div>
+
+    <div class="foot">En entrant, tu acceptes les regles de la communaute.</div>
   </div>
 </div>
 
-<!-- 2. LOGIN -->
-<div class="center hide" id="loginScreen">
-  <div class="box">
-    <h2>Connexion</h2>
-    <p>Connectez-vous avec Discord pour acceder a post.it</p>
-    <button class="btn discord full" id="discordLogin" type="button">Se connecter avec Discord</button>
-    <p class="err" id="loginError"></p>
+<!-- ============================================================
+     2. LOGIN DISCORD
+     ============================================================ -->
+<div class="screen hide" id="loginScreen">
+  <div class="inner">
+    <div class="brand">
+      <div class="brand-logo">post<span class="dot">.</span>it</div>
+      <div class="brand-sub">Partage de photos</div>
+    </div>
+
+    <div class="pcard">
+      <div class="icon-circle discord">
+        <svg viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg">
+          <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+        </svg>
+      </div>
+      <h1>Connexion requise</h1>
+      <p class="lead">
+        Connecte-toi avec <b style="color:#7289da;">Discord</b> pour acceder
+        a post.it, uploader des photos et interagir avec la communaute.
+      </p>
+
+      <div class="divider"></div>
+
+      <div class="btns">
+        <button class="btn discord full" id="discordLogin" type="button">
+          <svg viewBox="0 0 127.14 96.36" xmlns="http://www.w3.org/2000/svg">
+            <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+          </svg>
+          Continuer avec Discord
+        </button>
+      </div>
+
+      <p class="err" id="loginError"></p>
+
+      <div class="divider"></div>
+      <div class="legal" style="margin-bottom:0;background:transparent;border:none;padding:0;">
+        Tu ne partages que ton <b>pseudo</b>, ton <b>avatar</b> et ton <b>identifiant public</b>.
+        Aucun message, aucune liste d'amis.
+      </div>
+    </div>
+
+    <div class="foot">Propulse par Discord OAuth2 &middot; <a href="https://discord.com" target="_blank" rel="noopener">En savoir plus</a></div>
   </div>
 </div>
 
-<!-- 3. CHARGEMENT -->
-<div class="center hide" id="loadingScreen">
-  <div class="box" style="border:none;background:transparent;">
-    <span class="sp"></span>
-    <p style="margin-top:14px;color:#666;">Connexion en cours...</p>
+<!-- ============================================================
+     3. CHARGEMENT
+     ============================================================ -->
+<div class="screen hide" id="loadingScreen">
+  <div class="inner" style="text-align:center;">
+    <div class="loader"></div>
+    <p style="font-size:14px;color:#a0a0a0;font-weight:500;">Connexion a Discord...</p>
+    <p style="font-size:12px;color:#555;margin-top:6px;">Verification de ton compte</p>
   </div>
 </div>
 
-<!-- 4. SITE -->
+<!-- ============================================================
+     4. SITE
+     ============================================================ -->
 <div class="hide" id="site">
   <header>
     <div class="hd">
@@ -243,7 +370,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       <button class="tab hide" data-t="admin" id="adminTab" type="button" style="color:#ffb84d;">Admin</button>
     </div>
 
-    <!-- BROWSE -->
     <section class="pane on" data-p="browse">
       <div class="filters" id="filters">
         <button class="filter on" data-f="all" type="button">Tout</button>
@@ -255,10 +381,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         <div class="lab"><span>Stockage</span><b id="storageTxt">0 o / 100 Mo</b></div>
         <div class="bar"><div class="fill" id="storageFill"></div></div>
       </div>
-      <div class="sh">
-        <h2 id="ttl">Toutes les photos</h2>
-        <p id="sub">-</p>
-      </div>
+      <div class="sh"><h2 id="ttl">Toutes les photos</h2><p id="sub">-</p></div>
       <div class="grid" id="grid"></div>
       <div class="empty hide" id="empty">
         <div class="ei">&#128247;</div>
@@ -267,26 +390,19 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       </div>
     </section>
 
-    <!-- UPLOAD -->
     <section class="pane" data-p="upload">
-      <div class="sh">
-        <h2>Uploader une photo</h2>
-        <p>Declarez le contenu pour que les autres puissent le censurer.</p>
-      </div>
+      <div class="sh"><h2>Uploader une photo</h2><p>Declarez le contenu pour que les autres puissent le censurer.</p></div>
       <label class="uz" id="drop" for="file">
         <div class="ui">&#11014;</div>
         <div class="ut">Ajouter une image</div>
         <div class="ud">JPG, PNG, WebP - max 10 Mo</div>
-        <span class="btn p full" style="display:block;">Choisir un fichier</span>
+        <span class="btn prim" style="display:inline-flex;width:auto;padding:0 20px;">Choisir un fichier</span>
         <input id="file" type="file" accept="image/*" style="display:none">
       </label>
       <div class="pv" id="pv">
         <img id="pimg" alt="">
         <div class="fn" id="pname"></div>
-        <div class="fld">
-          <label>Titre</label>
-          <input id="ptitle" type="text" placeholder="Titre..." maxlength="80">
-        </div>
+        <div class="fld"><label>Titre</label><input id="ptitle" type="text" placeholder="Titre..." maxlength="80"></div>
         <div class="fld">
           <label>Classification (optionnel)</label>
           <div class="pils">
@@ -295,51 +411,28 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
             <div class="pil" data-t="other"><span class="dot"></span>Autre</div>
           </div>
         </div>
-        <div class="ia" id="iaInd"><div class="sp" style="width:12px;height:12px;border-width:2px;"></div><span id="iaTxt">Analyse IA...</span></div>
+        <div class="ia" id="iaInd"><span class="sp" style="border-color:#262626;border-top-color:#a0a0a0;"></span><span id="iaTxt">Analyse IA...</span></div>
         <div class="acts">
-          <button class="btn p" id="pubBtn" type="button">Publier</button>
+          <button class="btn prim" id="pubBtn" type="button">Publier</button>
           <button class="btn" id="cxlBtn" type="button">Annuler</button>
         </div>
       </div>
     </section>
 
-    <!-- SETTINGS -->
     <section class="pane" data-p="settings">
-      <div class="sh">
-        <h2>Parametres de censure</h2>
-        <p>Rien n'est censure par defaut. Activez ce que vous voulez flouter.</p>
-      </div>
+      <div class="sh"><h2>Parametres de censure</h2><p>Rien n'est censure par defaut.</p></div>
       <div class="settings">
         <h3>Flouter dans la galerie</h3>
-        <div class="row">
-          <div class="ri"><div class="n">NSFW / Adulte</div><div class="d">Floute les images marquees NSFW.</div></div>
-          <label class="tg"><input type="checkbox" id="cNsfw"><span class="sl"></span></label>
-        </div>
-        <div class="row">
-          <div class="ri"><div class="n">Gore / Violence</div><div class="d">Floute le sang, blessures, violence.</div></div>
-          <label class="tg"><input type="checkbox" id="cGore"><span class="sl"></span></label>
-        </div>
-        <div class="row">
-          <div class="ri"><div class="n">Autres contenus sensibles</div><div class="d">Floute les images marquees "autre".</div></div>
-          <label class="tg"><input type="checkbox" id="cOther"><span class="sl"></span></label>
-        </div>
-        <div class="row">
-          <div class="ri"><div class="n">Detection IA</div><div class="d">Analyse chaque image a l'upload.</div></div>
-          <span class="mand"><span class="dot"></span>Obligatoire</span>
-        </div>
+        <div class="row"><div class="ri"><div class="n">NSFW / Adulte</div><div class="d">Floute les images NSFW.</div></div><label class="tg"><input type="checkbox" id="cNsfw"><span class="sl"></span></label></div>
+        <div class="row"><div class="ri"><div class="n">Gore / Violence</div><div class="d">Floute le sang et la violence.</div></div><label class="tg"><input type="checkbox" id="cGore"><span class="sl"></span></label></div>
+        <div class="row"><div class="ri"><div class="n">Autres contenus sensibles</div><div class="d">Floute les images "autre".</div></div><label class="tg"><input type="checkbox" id="cOther"><span class="sl"></span></label></div>
+        <div class="row"><div class="ri"><div class="n">Detection IA</div><div class="d">Analyse chaque image a l'upload.</div></div><span class="mand"><span class="dot"></span>Obligatoire</span></div>
       </div>
-      <div class="info">
-        <b>Stockage :</b> limite configurable par l'admin.<br>
-        <b>Donnees :</b> parametres dans des cookies (1 an). Photos dans IndexedDB.
-      </div>
+      <div class="info"><b>Stockage :</b> limite configurable par l'admin.<br><b>Donnees :</b> parametres dans des cookies. Photos dans IndexedDB.</div>
     </section>
 
-    <!-- ADMIN -->
     <section class="pane" data-p="admin">
-      <div class="sh">
-        <h2>Panneau Admin</h2>
-        <p>Visible et accessible uniquement par toi.</p>
-      </div>
+      <div class="sh"><h2>Panneau Admin</h2><p>Visible et accessible uniquement par toi.</p></div>
       <div class="adm">
         <h3>&#128081; Statistiques</h3>
         <div class="stat">
@@ -354,27 +447,25 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         <div class="fld">
           <label>Limite de stockage globale (Mo)</label>
           <input id="admStorage" type="number" min="1" max="10000" step="1" placeholder="100">
-          <div class="hint">Entre 1 et 10000 Mo. Impacte tous les utilisateurs.</div>
+          <div class="hint">Entre 1 et 10000 Mo.</div>
         </div>
-        <button class="btn p full" id="admSave" type="button">Enregistrer la limite</button>
+        <button class="btn prim full" id="admSave" type="button">Enregistrer la limite</button>
         <div id="admStatus"></div>
       </div>
       <div class="adm">
         <h3>&#128465;&#65039; Actions</h3>
         <button class="btn dng full" id="admClearAll" type="button">Supprimer TOUTES les photos</button>
-        <div class="hint" style="margin-top:8px;">Action irreversible. Utile pour repartir de zero.</div>
+        <div class="hint" style="margin-top:8px;">Action irreversible.</div>
       </div>
     </section>
   </main>
 </div>
 
-<!-- MODAL LIGHTBOX -->
 <div class="modal" id="modal">
   <button class="mclose" id="mclose" type="button">X</button>
   <img id="mimg" alt="">
 </div>
 
-<!-- MODAL CONFIRM -->
 <div class="modal" id="confirm">
   <div class="cfbox">
     <h3 id="cfTitle">Confirmer ?</h3>
@@ -394,16 +485,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   'use strict';
   function $(id){ return document.getElementById(id); }
 
-  // ============================================================
-  // CONSTANTES
-  // ============================================================
   var STORAGE_KEY_LIMIT = 'postit_storage_limit';
-  var DEFAULT_LIMIT = 100 * 1024 * 1024; // 100 Mo
+  var DEFAULT_LIMIT = 100 * 1024 * 1024;
   var MAX_FILE_SIZE = 10 * 1024 * 1024;
 
-  // ============================================================
-  // ÉTAT
-  // ============================================================
   var S = {
     user: null,
     photos: [],
@@ -416,13 +501,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     modelReady: false,
     iaFailed: false,
     currentModalId: null,
-    pendingDelete: null, // { ids: [...], msg: '' }
+    pendingDelete: null,
     storageLimit: DEFAULT_LIMIT
   };
 
-  // ============================================================
-  // UTILS
-  // ============================================================
   function esc(s){
     if (s == null) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -456,10 +538,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 320);
     }, type === 'w' || type === 'e' ? 5000 : 2800);
   }
-
-  // ============================================================
-  // COOKIES / STORAGE
-  // ============================================================
   function getCookie(name){
     var parts = document.cookie ? document.cookie.split(';') : [];
     for (var i = 0; i < parts.length; i++){
@@ -474,14 +552,8 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     document.cookie = name + '=' + encodeURIComponent(value) + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
   }
 
-  // ============================================================
-  // INDEXEDDB
-  // ============================================================
-  var DB_NAME = 'postit_db';
-  var DB_VERSION = 2;
-  var STORE = 'photos';
-  var STORE_CFG = 'config';
-
+  // IDB
+  var DB_NAME = 'postit_db', DB_VERSION = 2, STORE = 'photos', STORE_CFG = 'config';
   function idbOpen(){
     return new Promise(function(resolve, reject){
       var req = indexedDB.open(DB_NAME, DB_VERSION);
@@ -535,16 +607,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     });
   }
 
-  // ============================================================
-  // LIMITE STOCKAGE (persistée dans IDB + localStorage)
-  // ============================================================
   function loadLimit(){
     try {
       var raw = localStorage.getItem(STORAGE_KEY_LIMIT);
-      if (raw){
-        var n = parseInt(raw, 10);
-        if (n >= 1024 * 1024) { S.storageLimit = n; return; }
-      }
+      if (raw){ var n = parseInt(raw, 10); if (n >= 1024*1024) { S.storageLimit = n; return; } }
     } catch(e){}
     S.storageLimit = DEFAULT_LIMIT;
   }
@@ -553,9 +619,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     idbPut(STORE_CFG, { key: 'storageLimit', value: S.storageLimit }).catch(function(){});
   }
 
-  // ============================================================
-  // STOCKAGE
-  // ============================================================
   function usage(){
     var total = 0;
     for (var i = 0; i < S.photos.length; i++) total += (S.photos[i].dataUrl || '').length;
@@ -573,10 +636,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (used >= S.storageLimit * 0.9) box.classList.add('danger');
     else if (used >= S.storageLimit * 0.75) box.classList.add('warn');
   }
-
-  // ============================================================
-  // CENSURE
-  // ============================================================
   function censored(p){
     var c = S.cens;
     if (p.nsfw && c.nsfw) return true;
@@ -585,10 +644,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (p.aiFlag) return true;
     return false;
   }
-
-  // ============================================================
-  // NAVIGATION
-  // ============================================================
   function go(tab){
     var panes = document.querySelectorAll('.pane');
     var tabs = document.querySelectorAll('.tab');
@@ -597,7 +652,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (tab === 'browse'){ render(); updateStorageUI(); }
     if (tab === 'admin') renderAdmin();
   }
-
   function setFilter(f){
     S.filter = f;
     setCookie('postit_filter', f);
@@ -606,57 +660,38 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     render();
   }
 
-  // ============================================================
-  // RENDU GALERIE
-  // ============================================================
   function render(){
-    var grid = $('grid');
-    var empty = $('empty');
-    var ttl = $('ttl');
-    var sub = $('sub');
-    var emptyMsg = $('emptyMsg');
+    var grid = $('grid'), empty = $('empty'), ttl = $('ttl'), sub = $('sub'), emptyMsg = $('emptyMsg');
     if (!grid) return;
-
     var list = S.photos.slice();
     if (S.filter === 'nsfw') list = list.filter(function(p){ return p.nsfw; });
     else if (S.filter === 'gore') list = list.filter(function(p){ return p.gore; });
     else if (S.filter === 'other') list = list.filter(function(p){ return p.other; });
-
     if (S.q){
       var q = S.q;
-      list = list.filter(function(p){
-        return (p.title || '').toLowerCase().indexOf(q) !== -1;
-      });
+      list = list.filter(function(p){ return (p.title || '').toLowerCase().indexOf(q) !== -1; });
     }
-
-    var filterLabel = '';
-    if (S.filter === 'nsfw') filterLabel = 'NSFW';
-    else if (S.filter === 'gore') filterLabel = 'Gore';
-    else if (S.filter === 'other') filterLabel = 'Autres';
-
-    if (S.q) ttl.textContent = 'Resultats : "' + S.q + '"' + (filterLabel ? ' - ' + filterLabel : '');
-    else if (filterLabel) ttl.textContent = filterLabel;
+    var fl = '';
+    if (S.filter === 'nsfw') fl = 'NSFW'; else if (S.filter === 'gore') fl = 'Gore'; else if (S.filter === 'other') fl = 'Autres';
+    if (S.q) ttl.textContent = 'Resultats : "' + S.q + '"' + (fl ? ' - ' + fl : '');
+    else if (fl) ttl.textContent = fl;
     else ttl.textContent = 'Toutes les photos';
-
     list.sort(function(a,b){ return (b.date||0) - (a.date||0); });
     sub.textContent = list.length + ' photo' + (list.length > 1 ? 's' : '');
-
     if (!list.length){
       grid.innerHTML = '';
       if (empty) empty.classList.remove('hide');
       if (emptyMsg){
-        if (S.q) emptyMsg.textContent = 'Aucune photo ne correspond a "' + S.q + '".';
-        else if (filterLabel) emptyMsg.textContent = 'Aucune photo ' + filterLabel + ' pour le moment.';
+        if (S.q) emptyMsg.textContent = 'Aucune photo pour "' + S.q + '".';
+        else if (fl) emptyMsg.textContent = 'Aucune photo ' + fl + '.';
         else emptyMsg.textContent = 'La galerie est vide. Uploadez la premiere photo !';
       }
       return;
     }
     if (empty) empty.classList.add('hide');
-
     var user = S.user || {};
     var isAdmin = !!user.isAdmin;
     var myId = user.id;
-
     var html = '';
     for (var k = 0; k < list.length; k++){
       var p = list[k];
@@ -668,17 +703,9 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       if (p.aiFlag) badges += '<span class="bg i">IA</span>';
       if (p.ownerId === myId) badges += '<span class="bg mine">MOI</span>';
       else if (isAdmin) badges += '<span class="bg adm">ADMIN</span>';
-
-      // Bouton supprimer : admin peut tout, user peut le sien
       var canDelete = isAdmin || (p.ownerId === myId);
-      var delBtn = canDelete
-        ? '<button class="del" type="button" data-del="' + esc(p.id) + '" aria-label="Supprimer">&#10005;</button>'
-        : '';
-
-      var ownerLine = p.ownerName
-        ? '<span class="ow">@' + esc(p.ownerName) + '</span>'
-        : '';
-
+      var delBtn = canDelete ? '<button class="del" type="button" data-del="' + esc(p.id) + '">&#10005;</button>' : '';
+      var ownerLine = p.ownerName ? '<span class="ow">@' + esc(p.ownerName) + '</span>' : '';
       html += '<div class="card" data-id="' + esc(p.id) + '">'
         + delBtn
         + '<div class="ibox">'
@@ -686,15 +713,11 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         +   (c ? '<div class="cov on"><div class="ic">&#128274;</div><div class="lb">Masque</div><div class="hx">Toucher pour voir</div></div>' : '')
         + '</div>'
         + '<div class="bgs">' + badges + '</div>'
-        + '<div class="bd">'
-        +   '<div class="tt">' + esc(p.title) + '</div>'
-        +   '<div class="mt">' + ago(p.date) + ownerLine + '</div>'
-        + '</div>'
+        + '<div class="bd"><div class="tt">' + esc(p.title) + '</div>'
+        + '<div class="mt">' + ago(p.date) + ownerLine + '</div></div>'
         + '</div>';
     }
     grid.innerHTML = html;
-
-    // Evenements cartes
     var cards = grid.querySelectorAll('.card');
     for (var n = 0; n < cards.length; n++){
       (function(card){
@@ -703,19 +726,12 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         if (box){
           box.addEventListener('click', function(){
             var cov = box.querySelector('.cov.on');
-            if (cov){
-              cov.classList.remove('on');
-              var img = box.querySelector('img');
-              if (img) img.classList.remove('cens');
-              return;
-            }
+            if (cov){ cov.classList.remove('on'); var img = box.querySelector('img'); if (img) img.classList.remove('cens'); return; }
             openModal(id);
           });
         }
       })(cards[n]);
     }
-
-    // Evenements delete
     var dels = grid.querySelectorAll('.del');
     for (var d = 0; d < dels.length; d++){
       (function(btn){
@@ -728,13 +744,9 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     }
   }
 
-  // ============================================================
-  // ADMIN RENDU
-  // ============================================================
   function renderAdmin(){
     if (!S.user || !S.user.isAdmin) return;
-    var users = {};
-    var flagged = 0;
+    var users = {}, flagged = 0;
     for (var i = 0; i < S.photos.length; i++){
       var p = S.photos[i];
       if (p.ownerId) users[p.ownerId] = true;
@@ -747,28 +759,18 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     $('admStorage').value = Math.round(S.storageLimit / 1024 / 1024);
   }
 
-  // ============================================================
-  // MODAL
-  // ============================================================
   function openModal(id){
     var p = null;
     for (var i = 0; i < S.photos.length; i++) if (S.photos[i].id === id){ p = S.photos[i]; break; }
     if (!p) return;
     S.currentModalId = id;
     var img = $('mimg');
-    img.src = p.dataUrl;
-    img.alt = p.title || '';
+    img.src = p.dataUrl; img.alt = p.title || '';
     img.className = censored(p) ? 'cens' : '';
     $('modal').classList.add('on');
   }
-  function closeModal(){
-    S.currentModalId = null;
-    $('modal').classList.remove('on');
-  }
+  function closeModal(){ S.currentModalId = null; $('modal').classList.remove('on'); }
 
-  // ============================================================
-  // SUPPRESSION
-  // ============================================================
   function askDelete(id){
     var p = null;
     for (var i = 0; i < S.photos.length; i++) if (S.photos[i].id === id){ p = S.photos[i]; break; }
@@ -778,28 +780,21 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (!isAdmin && !isMine){ toast('Tu ne peux supprimer que tes photos.', 'e'); return; }
     S.pendingDelete = { ids: [id] };
     $('cfTitle').textContent = 'Supprimer cette photo ?';
-    $('cfMsg').textContent = '« ' + p.title + ' » (' + fmtBytes((p.dataUrl||'').length) + ') sera supprimee definitivement.';
+    $('cfMsg').textContent = '« ' + p.title + ' » (' + fmtBytes((p.dataUrl||'').length) + ') sera supprimee.';
     $('confirm').classList.add('on');
   }
-
   function askClearAll(){
     if (!S.user || !S.user.isAdmin) return;
     S.pendingDelete = { ids: S.photos.map(function(p){ return p.id; }) };
     $('cfTitle').textContent = 'Supprimer TOUTES les photos ?';
-    $('cfMsg').textContent = S.photos.length + ' photos seront supprimees. Action irreversible.';
+    $('cfMsg').textContent = S.photos.length + ' photos seront supprimees. Irreversible.';
     $('confirm').classList.add('on');
   }
-
-  function closeConfirm(){
-    S.pendingDelete = null;
-    $('confirm').classList.remove('on');
-  }
-
+  function closeConfirm(){ S.pendingDelete = null; $('confirm').classList.remove('on'); }
   function doDelete(){
     if (!S.pendingDelete) return;
     var ids = S.pendingDelete.ids.slice();
     closeConfirm();
-
     var promises = ids.map(function(id){ return idbDelete(STORE, id); });
     Promise.all(promises).then(function(){
       var removed = 0;
@@ -808,50 +803,31 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         return true;
       });
       if (S.currentModalId && ids.indexOf(S.currentModalId) !== -1) closeModal();
-      render();
-      updateStorageUI();
-      renderAdmin();
+      render(); updateStorageUI(); renderAdmin();
       toast(ids.length + ' photo(s) supprimee(s). ' + fmtBytes(removed) + ' liberes.', 's');
-    }).catch(function(err){
-      console.warn(err);
-      toast('Erreur lors de la suppression.', 'e');
-    });
+    }).catch(function(){ toast('Erreur de suppression.', 'e'); });
   }
 
-  // ============================================================
-  // UPLOAD
-  // ============================================================
   function handleFile(f){
     if (!S.user){ toast('Connecte-toi d\'abord.', 'e'); return; }
     if (!f || !f.type || f.type.indexOf('image/') !== 0){ toast('Format non supporte.', 'e'); return; }
     if (f.size > MAX_FILE_SIZE){ toast('Image trop lourde (max 10 Mo).', 'e'); return; }
-
     var estimated = Math.ceil(f.size * 1.37);
     var remaining = S.storageLimit - usage();
     if (estimated > remaining){
-      toast('Limite de stockage atteinte (' + fmtBytes(S.storageLimit) + '). Il reste ' + fmtBytes(Math.max(0, remaining)) + '. Supprimez des photos pour liberer.', 'e');
+      toast('Limite atteinte. Il reste ' + fmtBytes(Math.max(0, remaining)) + '.', 'e');
       return;
     }
-
     var r = new FileReader();
     r.onload = function(ev){
       var dataUrl = ev.target.result;
-      if (!hasSpaceFor(dataUrl.length)){
-        toast('Limite de stockage atteinte. Cette image ne peut pas etre ajoutee.', 'e');
-        return;
-      }
-      S.pending = {
-        fileName: f.name,
-        dataUrl: dataUrl,
-        title: f.name.replace(/\.[^.]+$/, ''),
-        nsfw: false, gore: false, other: false, aiFlag: false
-      };
+      if (!hasSpaceFor(dataUrl.length)){ toast('Limite atteinte.', 'e'); return; }
+      S.pending = { fileName: f.name, dataUrl: dataUrl, title: f.name.replace(/\.[^.]+$/, ''), nsfw: false, gore: false, other: false, aiFlag: false };
       showPreview();
     };
     r.onerror = function(){ toast('Erreur de lecture.', 'e'); };
     r.readAsDataURL(f);
   }
-
   function showPreview(){
     var p = S.pending;
     if (!p) return;
@@ -863,69 +839,38 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     $('pv').classList.add('on');
     analyzePending();
   }
-
-  function cancelPreview(){
-    S.pending = null;
-    $('pv').classList.remove('on');
-  }
-
+  function cancelPreview(){ S.pending = null; $('pv').classList.remove('on'); }
   function publish(){
     var p = S.pending;
     if (!p || !S.user) return;
-    if (!hasSpaceFor(p.dataUrl.length)){ toast('Limite de stockage depassee.', 'e'); return; }
-
+    if (!hasSpaceFor(p.dataUrl.length)){ toast('Limite atteinte.', 'e'); return; }
     var title = ($('ptitle').value || '').trim() || 'Sans titre';
-
     var photo = {
       id: 'u' + Date.now() + Math.floor(Math.random() * 100000),
-      title: title,
-      dataUrl: p.dataUrl,
-      nsfw: !!p.nsfw,
-      gore: !!p.gore,
-      other: !!p.other,
-      aiFlag: !!p.aiFlag,
-      date: Date.now(),
-      ownerId: S.user.id,
-      ownerName: S.user.username
+      title: title, dataUrl: p.dataUrl,
+      nsfw: !!p.nsfw, gore: !!p.gore, other: !!p.other, aiFlag: !!p.aiFlag,
+      date: Date.now(), ownerId: S.user.id, ownerName: S.user.username
     };
-
     S.photos.unshift(photo);
-
     idbPut(STORE, photo).then(function(){
-      cancelPreview();
-      go('browse');
-      updateStorageUI();
+      cancelPreview(); go('browse'); updateStorageUI();
       toast('Photo publiee !', 's');
     }).catch(function(){
-      cancelPreview();
-      go('browse');
-      updateStorageUI();
+      cancelPreview(); go('browse'); updateStorageUI();
       toast('Photo publiee (non persistee).', 'w');
     });
   }
-
-  // ============================================================
-  // CHARGEMENT INITIAL
-  // ============================================================
   function loadAll(){
     return idbGetAll(STORE).then(function(arr){
       arr.sort(function(a,b){ return (b.date||0) - (a.date||0); });
       S.photos = arr;
-    }).catch(function(err){
-      console.warn('IDB indisponible:', err);
-      S.photos = [];
-    });
+    }).catch(function(){ S.photos = []; });
   }
 
-  // ============================================================
-  // IA
-  // ============================================================
   function loadScript(src){
     return new Promise(function(resolve, reject){
-      var s = document.createElement('script');
-      s.src = src; s.async = true;
-      s.onload = resolve;
-      s.onerror = function(){ reject(new Error('fail')); };
+      var s = document.createElement('script'); s.src = src; s.async = true;
+      s.onload = resolve; s.onerror = function(){ reject(new Error('fail')); };
       document.head.appendChild(s);
     });
   }
@@ -934,16 +879,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     S.modelLoading = true;
     loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js')
       .then(function(){ return loadScript('https://cdn.jsdelivr.net/npm/nsfwjs@4.1.0/dist/nsfwjs.min.js'); })
-      .then(function(){
-        if (typeof window.nsfwjs === 'undefined') throw new Error('manquant');
-        return window.nsfwjs.load();
-      })
+      .then(function(){ if (typeof window.nsfwjs === 'undefined') throw new Error('x'); return window.nsfwjs.load(); })
       .then(function(m){ S.model = m; S.modelReady = true; })
-      .catch(function(err){ console.warn('IA indispo:', err); S.iaFailed = true; })
-      .then(function(){
-        S.modelLoading = false;
-        if (S.pending && S.modelReady) analyzePending();
-      });
+      .catch(function(){ S.iaFailed = true; })
+      .then(function(){ S.modelLoading = false; if (S.pending && S.modelReady) analyzePending(); });
   }
   function classify(dataUrl){
     return new Promise(function(resolve, reject){
@@ -951,12 +890,8 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       var img = new Image();
       img.onload = function(){
         S.model.classify(img).then(function(preds){
-          var get = function(n){
-            for (var i = 0; i < preds.length; i++) if (preds[i].className === n) return preds[i].probability;
-            return 0;
-          };
-          var isNsfw = get('Porn') > 0.5 || get('Hentai') > 0.5 || get('Sexy') > 0.75;
-          resolve({ isNsfw: isNsfw });
+          var get = function(n){ for (var i = 0; i < preds.length; i++) if (preds[i].className === n) return preds[i].probability; return 0; };
+          resolve({ isNsfw: get('Porn') > 0.5 || get('Hentai') > 0.5 || get('Sexy') > 0.75 });
         }).catch(reject);
       };
       img.onerror = function(){ reject(new Error('img')); };
@@ -964,38 +899,20 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     });
   }
   function analyzePending(){
-    var p = S.pending;
-    if (!p) return;
-    if (!S.modelReady){
-      if (!S.iaFailed && !S.modelLoading) loadModel();
-      return;
-    }
+    var p = S.pending; if (!p) return;
+    if (!S.modelReady){ if (!S.iaFailed && !S.modelLoading) loadModel(); return; }
     var ind = $('iaInd'), txt = $('iaTxt');
-    ind.classList.add('on');
-    txt.textContent = 'Analyse IA...';
+    ind.classList.add('on'); txt.textContent = 'Analyse IA...';
     classify(p.dataUrl).then(function(r){
-      if (r.isNsfw && !p.nsfw){
-        p.nsfw = true;
-        var pill = document.querySelector('.pil[data-t="nsfw"]');
-        if (pill) pill.classList.add('on');
-        toast('IA : contenu adulte detecte, NSFW coche.', 'w');
-      }
+      if (r.isNsfw && !p.nsfw){ p.nsfw = true; var pill = document.querySelector('.pil[data-t="nsfw"]'); if (pill) pill.classList.add('on'); toast('IA : NSFW coche.', 'w'); }
       txt.textContent = 'Analyse terminee';
-    }).catch(function(){
-      txt.textContent = 'Analyse impossible';
-    }).then(function(){
-      setTimeout(function(){ ind.classList.remove('on'); }, 1200);
-    });
+    }).catch(function(){ txt.textContent = 'Analyse impossible'; })
+      .then(function(){ setTimeout(function(){ ind.classList.remove('on'); }, 1200); });
   }
 
-  // ============================================================
-  // INIT
-  // ============================================================
   function initSite(){
     S.user = PostItAuth.getUser();
     if (!S.user) return;
-
-    // Header user
     var av = S.user.avatar
       ? 'https://cdn.discordapp.com/avatars/' + S.user.id + '/' + S.user.avatar + '.png?size=64'
       : 'https://cdn.discordapp.com/embed/avatars/' + ((parseInt(S.user.id,10) >> 22) % 6) + '.png';
@@ -1004,20 +921,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       '<span class="nm">' + esc(S.user.username) + '</span>' +
       (S.user.isAdmin ? '<span class="bdg">ADMIN</span>' : '') +
       '<button class="lo" id="logoutBtn" type="button">Quitter</button>';
-    $('logoutBtn').addEventListener('click', function(){
-      PostItAuth.logout();
-      window.location.reload();
-    });
+    $('logoutBtn').addEventListener('click', function(){ PostItAuth.logout(); window.location.reload(); });
+    if (S.user.isAdmin){ $('adminTab').classList.remove('hide'); $('logoBtn').addEventListener('click', function(){ go('admin'); }); }
+    else { $('logoBtn').addEventListener('click', function(){ go('browse'); }); }
 
-    // Onglet admin visible
-    if (S.user.isAdmin){
-      $('adminTab').classList.remove('hide');
-      $('logoBtn').addEventListener('click', function(){ go('admin'); });
-    } else {
-      $('logoBtn').addEventListener('click', function(){ go('browse'); });
-    }
-
-    // Cookies censure
     S.cens.nsfw = getCookie('postit_cens_nsfw') === '1';
     S.cens.gore = getCookie('postit_cens_gore') === '1';
     S.cens.other = getCookie('postit_cens_other') === '1';
@@ -1025,29 +932,16 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     $('cGore').checked = S.cens.gore;
     $('cOther').checked = S.cens.other;
 
-    // Filtre
     var f = getCookie('postit_filter');
     if (f === 'nsfw' || f === 'gore' || f === 'other' || f === 'all') S.filter = f;
     var chips = document.querySelectorAll('.filter');
     for (var i = 0; i < chips.length; i++) chips[i].classList.toggle('on', chips[i].getAttribute('data-f') === S.filter);
 
-    // Tabs
     var tabs = document.querySelectorAll('.tab');
-    for (var t = 0; t < tabs.length; t++){
-      (function(el){
-        el.addEventListener('click', function(){ go(el.getAttribute('data-t')); });
-      })(tabs[t]);
-    }
-
-    // Filtres
+    for (var t = 0; t < tabs.length; t++){ (function(el){ el.addEventListener('click', function(){ go(el.getAttribute('data-t')); }); })(tabs[t]); }
     var fbtn = document.querySelectorAll('.filter');
-    for (var fb = 0; fb < fbtn.length; fb++){
-      (function(el){
-        el.addEventListener('click', function(){ setFilter(el.getAttribute('data-f')); });
-      })(fbtn[fb]);
-    }
+    for (var fb = 0; fb < fbtn.length; fb++){ (function(el){ el.addEventListener('click', function(){ setFilter(el.getAttribute('data-f')); }); })(fbtn[fb]); }
 
-    // File
     $('file').addEventListener('change', function(){
       if ($('file').files && $('file').files[0]) handleFile($('file').files[0]);
       $('file').value = '';
@@ -1055,20 +949,12 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     $('pubBtn').addEventListener('click', publish);
     $('cxlBtn').addEventListener('click', cancelPreview);
 
-    // Pills
     var pills = document.querySelectorAll('.pil');
-    for (var j = 0; j < pills.length; j++){
-      (function(el){
-        el.addEventListener('click', function(){
-          var on = el.classList.toggle('on');
-          if (!S.pending) return;
-          var tp = el.getAttribute('data-t');
-          if (tp) S.pending[tp] = on;
-        });
-      })(pills[j]);
-    }
+    for (var j = 0; j < pills.length; j++){ (function(el){ el.addEventListener('click', function(){
+      var on = el.classList.toggle('on'); if (!S.pending) return;
+      var tp = el.getAttribute('data-t'); if (tp) S.pending[tp] = on;
+    }); })(pills[j]); }
 
-    // Censure
     function bindCens(id, key, cookie){
       $(id).addEventListener('change', function(){
         S.cens[key] = $(id).checked;
@@ -1080,57 +966,39 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     bindCens('cGore','gore','postit_cens_gore');
     bindCens('cOther','other','postit_cens_other');
 
-    // Modal
     $('mclose').addEventListener('click', closeModal);
     $('modal').addEventListener('click', function(e){ if (e.target === $('modal')) closeModal(); });
     $('cfNo').addEventListener('click', closeConfirm);
     $('cfYes').addEventListener('click', doDelete);
     $('confirm').addEventListener('click', function(e){ if (e.target === $('confirm')) closeConfirm(); });
     document.addEventListener('keydown', function(e){
-      if (e.key === 'Escape'){
-        if ($('confirm').classList.contains('on')) closeConfirm();
-        else closeModal();
-      }
+      if (e.key === 'Escape'){ if ($('confirm').classList.contains('on')) closeConfirm(); else closeModal(); }
     });
 
-    // Admin
     $('admSave').addEventListener('click', function(){
       if (!S.user.isAdmin) return;
       var mb = parseInt($('admStorage').value, 10);
-      if (!mb || mb < 1 || mb > 10000){
-        $('admStatus').textContent = 'Valeur invalide (1-10000).';
-        $('admStatus').style.color = '#ff4d4d';
-        return;
-      }
+      if (!mb || mb < 1 || mb > 10000){ $('admStatus').textContent = 'Valeur invalide (1-10000).'; $('admStatus').style.color = '#ff4d4d'; return; }
       S.storageLimit = mb * 1024 * 1024;
       saveLimit();
       $('admStatus').textContent = 'Limite : ' + mb + ' Mo';
       $('admStatus').style.color = '#4dff88';
-      updateStorageUI();
-      renderAdmin();
-      toast('Limite mise a jour : ' + mb + ' Mo', 's');
+      updateStorageUI(); renderAdmin();
+      toast('Limite : ' + mb + ' Mo', 's');
     });
     $('admClearAll').addEventListener('click', askClearAll);
 
-    // Chargement photos
     loadLimit();
-    loadAll().then(function(){
-      render();
-      updateStorageUI();
-      renderAdmin();
-    });
-
-    // IA en arriere-plan
+    loadAll().then(function(){ render(); updateStorageUI(); renderAdmin(); });
     setTimeout(function(){ try { loadModel(); } catch(e){} }, 2000);
   }
 
-  // ============================================================
-  // AUTH FLOW (age gate + login)
-  // ============================================================
   function show(id){
-    ['ageScreen','loginScreen','loadingScreen','site'].forEach(function(x){
-      $(x).classList.toggle('hide', x !== id);
+    ['ageScreen','loginScreen','loadingScreen'].forEach(function(x){
+      var el = $(x); if (el) el.classList.toggle('hide', x !== id);
     });
+    var site = $('site');
+    if (site) site.classList.toggle('hide', id !== 'site');
   }
 
   function startAuth(){
