@@ -28,6 +28,16 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .pane{display:none;}
 .pane.on{display:block;}
 
+/* FILTRES NSFW/GORE/AUTRES */
+.filters{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;}
+.filters::-webkit-scrollbar{display:none;}
+.filter{padding:8px 16px;font-size:12px;font-weight:700;letter-spacing:.3px;color:#a0a0a0;background:#161616;border:1.5px solid #262626;border-radius:99px;cursor:pointer;white-space:nowrap;font-family:inherit;transition:all .15s;user-select:none;-webkit-user-select:none;}
+.filter:active{transform:scale(.96);}
+.filter.on{background:#ededed;color:#0a0a0a;border-color:#ededed;}
+.filter.f-nsfw.on{background:#ff4d4d;border-color:#ff4d4d;color:#fff;}
+.filter.f-gore.on{background:#ff8c00;border-color:#ff8c00;color:#fff;}
+.filter.f-other.on{background:#a0a0a0;border-color:#a0a0a0;color:#fff;}
+
 /* STORAGE */
 .storage{padding:12px 14px;background:#111;border:1px solid #262626;border-radius:10px;margin-bottom:14px;}
 .storage .lab{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#a0a0a0;margin-bottom:7px;font-weight:500;gap:8px;}
@@ -63,7 +73,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .bg.o{background:#888;color:#fff;}
 .bg.i{background:#ffb84d;color:#000;}
 
-/* BOUTON SUPPRIMER */
 .del{
   position:absolute;top:6px;right:6px;z-index:4;
   width:28px;height:28px;
@@ -140,19 +149,32 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .info{font-size:11px;color:#666;margin-top:10px;line-height:1.5;padding:12px;background:#111;border:1px solid #262626;border-radius:8px;}
 .info b{color:#a0a0a0;font-weight:600;}
 
-/* MODALS */
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:16px;}
 .modal.on{display:flex;}
 .modal img{max-width:100%;max-height:80vh;border-radius:12px;display:block;object-fit:contain;}
 .modal img.cens{filter:blur(22px) brightness(.5);}
 .mclose{position:absolute;top:16px;right:16px;width:40px;height:40px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50%;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;}
 
-/* CONFIRM */
 .cfbox{background:#161616;border:1px solid #262626;border-radius:14px;padding:22px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.7);}
 .cfbox h3{font-size:16px;font-weight:700;margin-bottom:8px;color:#ededed;}
 .cfbox p{font-size:13px;color:#a0a0a0;line-height:1.55;margin-bottom:18px;word-break:break-word;}
 .cfbtns{display:flex;gap:8px;justify-content:flex-end;}
 .cfbtns .btn{height:38px;padding:0 16px;font-size:13px;}
+
+/* AGE GATE */
+.agegate{position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:#0a0a0a;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto;}
+.agegate.hide{display:none !important;}
+.agebox{max-width:460px;width:100%;background:#161616;border:1px solid #262626;border-radius:16px;padding:28px 22px;text-align:center;box-shadow:0 20px 80px rgba(0,0,0,.8);}
+.ageicon{font-size:56px;margin-bottom:14px;color:#ffb84d;line-height:1;}
+.agebox h2{font-size:20px;font-weight:800;margin-bottom:14px;color:#ededed;letter-spacing:-.3px;}
+.agebox p{font-size:14px;color:#a0a0a0;line-height:1.65;margin-bottom:12px;}
+.agebox .warn{color:#ffb84d;font-weight:700;}
+.agebox .danger{color:#ff4d4d;font-weight:700;}
+.agebox .rule{height:1px;background:#262626;margin:18px 0;}
+.agebtns{display:flex;flex-direction:column;gap:8px;margin-top:22px;}
+.agebtns .btn{width:100%;height:46px;font-size:14px;}
+.agebtns .btn.age-no{background:transparent;border-color:#262626;color:#a0a0a0;font-weight:500;font-size:12px;}
+.agebtns .btn.age-no:hover{color:#ededed;}
 
 .toasts{position:fixed;left:12px;right:12px;bottom:12px;z-index:2000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
 @media(min-width:600px){.toasts{left:auto;right:20px;bottom:20px;align-items:flex-end;}}
@@ -164,6 +186,31 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 </style>
 </head>
 <body>
+
+<!-- AGE GATE -->
+<div class="agegate" id="agegate">
+  <div class="agebox">
+    <div class="ageicon">&#9888;&#65039;</div>
+    <h2>Avertissement</h2>
+    <p>
+      <span class="warn">post.it</span> est un espace de partage qui peut contenir du contenu
+      <span class="danger">NSFW</span>, <span class="danger">Gore</span> et d'autres
+      contenus sensibles ou choquants.
+    </p>
+    <p>
+      En continuant, vous certifiez avoir <span class="warn">18 ans ou plus</span>
+      et consentir à voir ce type de contenu.
+    </p>
+    <div class="rule"></div>
+    <p style="font-size:12px;color:#666;">
+      Si vous avez moins de 18 ans, vous allez etre redirige vers google.com.
+    </p>
+    <div class="agebtns">
+      <button class="btn p" id="ageYes" type="button">J'ai 18 ans ou plus &mdash; Entrer</button>
+      <button class="btn age-no" id="ageNo" type="button">J'ai moins de 18 ans</button>
+    </div>
+  </div>
+</div>
 
 <header>
   <div class="hd">
@@ -186,6 +233,12 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   </div>
 
   <section class="pane on" id="pane-browse">
+    <div class="filters" id="filters">
+      <button class="filter on" data-f="all" type="button">Tout</button>
+      <button class="filter f-nsfw" data-f="nsfw" type="button">NSFW</button>
+      <button class="filter f-gore" data-f="gore" type="button">Gore</button>
+      <button class="filter f-other" data-f="other" type="button">Autres</button>
+    </div>
     <div class="storage" id="storage">
       <div class="lab"><span>Stockage utilise</span><b id="storageTxt">0 o / 100 Mo</b></div>
       <div class="bar"><div class="fill" id="storageFill"></div></div>
@@ -316,18 +369,20 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   // CONSTANTES
   // ============================================================
   var COOKIE_DAYS = 365;
-  var STORAGE_LIMIT = 100 * 1024 * 1024; // 100 Mo
-  var MAX_FILE_SIZE = 10 * 1024 * 1024;  // 10 Mo par image
+  var AGE_COOKIE_DAYS = 30;
+  var STORAGE_LIMIT = 100 * 1024 * 1024;
+  var MAX_FILE_SIZE = 10 * 1024 * 1024;
   var WARN_THRESHOLD = 0.75;
   var DANGER_THRESHOLD = 0.90;
 
   // ============================================================
   // COOKIES
   // ============================================================
-  function setCookie(name, value){
+  function setCookie(name, value, days){
     try {
       var d = new Date();
-      d.setTime(d.getTime() + (COOKIE_DAYS * 24 * 60 * 60 * 1000));
+      var dur = (days || COOKIE_DAYS) * 24 * 60 * 60 * 1000;
+      d.setTime(d.getTime() + dur);
       document.cookie = name + '=' + encodeURIComponent(value)
         + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
     } catch(e){}
@@ -404,6 +459,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     photos: [],
     tab: 'browse',
     q: '',
+    filter: 'all', // all | nsfw | gore | other
     cens: { nsfw:false, gore:false, other:false, ia:true },
     pending: null,
     model: null,
@@ -455,13 +511,12 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   }
 
   // ============================================================
-  // STOCKAGE : calcul de l'usage
+  // STOCKAGE
   // ============================================================
   function usage(){
     var total = 0;
     for (var i = 0; i < S.photos.length; i++){
-      var u = S.photos[i].dataUrl || '';
-      total += u.length;
+      total += (S.photos[i].dataUrl || '').length;
     }
     return total;
   }
@@ -482,8 +537,8 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     else if (used >= STORAGE_LIMIT * WARN_THRESHOLD) box.classList.add('warn');
   }
 
-  function hasSpaceFor(estimatedBytes){
-    return usage() + estimatedBytes <= STORAGE_LIMIT;
+  function hasSpaceFor(bytes){
+    return usage() + bytes <= STORAGE_LIMIT;
   }
 
   // ============================================================
@@ -515,6 +570,16 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (tab === 'browse'){ render(); updateStorageUI(); }
   }
 
+  function setFilter(f){
+    S.filter = f;
+    setCookie('postit_filter', f);
+    var chips = document.querySelectorAll('.filter');
+    for (var i = 0; i < chips.length; i++){
+      chips[i].classList.toggle('on', chips[i].getAttribute('data-f') === f);
+    }
+    render();
+  }
+
   // ============================================================
   // RENDU
   // ============================================================
@@ -526,6 +591,17 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (!grid) return;
 
     var list = S.photos.slice();
+
+    // Filtre categorie
+    if (S.filter === 'nsfw'){
+      list = list.filter(function(p){ return p.nsfw; });
+    } else if (S.filter === 'gore'){
+      list = list.filter(function(p){ return p.gore; });
+    } else if (S.filter === 'other'){
+      list = list.filter(function(p){ return p.other; });
+    }
+
+    // Recherche
     if (S.q){
       var q = S.q;
       list = list.filter(function(p){
@@ -537,7 +613,18 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         }
         return false;
       });
-      ttl.textContent = 'Resultats : "' + S.q + '"';
+    }
+
+    // Titre
+    var filterLabel = '';
+    if (S.filter === 'nsfw') filterLabel = 'NSFW';
+    else if (S.filter === 'gore') filterLabel = 'Gore';
+    else if (S.filter === 'other') filterLabel = 'Autres';
+
+    if (S.q){
+      ttl.textContent = 'Resultats : "' + S.q + '"' + (filterLabel ? ' - ' + filterLabel : '');
+    } else if (filterLabel){
+      ttl.textContent = filterLabel;
     } else {
       ttl.textContent = 'Toutes les photos';
     }
@@ -552,6 +639,9 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         if (S.q){
           empty.querySelector('.et').textContent = 'Aucun resultat';
           empty.querySelector('.ed').textContent = 'Aucune photo ne correspond a "' + S.q + '".';
+        } else if (filterLabel){
+          empty.querySelector('.et').textContent = 'Aucune photo ' + filterLabel;
+          empty.querySelector('.ed').textContent = 'Aucune photo dans cette categorie pour l\'instant.';
         } else {
           empty.querySelector('.et').textContent = 'Aucune photo';
           empty.querySelector('.ed').textContent = 'La galerie est vide. Uploadez la premiere photo !';
@@ -586,7 +676,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     }
     grid.innerHTML = html;
 
-    // Evenements des cartes
     var cards = grid.querySelectorAll('.card');
     for (var n = 0; n < cards.length; n++){
       (function(card){
@@ -607,7 +696,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       })(cards[n]);
     }
 
-    // Evenements des boutons supprimer
     var dels = grid.querySelectorAll('.del');
     for (var d = 0; d < dels.length; d++){
       (function(btn){
@@ -671,13 +759,11 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (!id) return;
 
     idbDelete(id).then(function(){
-      var before = usage();
       var removed = 0;
       S.photos = S.photos.filter(function(x){
         if (x.id === id){ removed += (x.dataUrl || '').length; return false; }
         return true;
       });
-      // Si la modal lightbox affichait cette photo, fermer
       if (S.currentModalId === id) closeModal();
       render();
       updateStorageUI();
@@ -701,7 +787,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       return;
     }
 
-    // Pre-verification : estimation de la taille stockee
     var estimatedStored = Math.ceil(f.size * 1.37);
     var remaining = STORAGE_LIMIT - usage();
     if (estimatedStored > remaining){
@@ -715,7 +800,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     r.onload = function(ev){
       var dataUrl = ev.target.result;
 
-      // Verification exacte apres lecture
       if (!hasSpaceFor(dataUrl.length)){
         toast('Limite d\'upload globale atteinte (100 Mo). '
           + 'Cette image ne peut pas etre ajoutee. '
@@ -760,7 +844,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     var p = S.pending;
     if (!p) return;
 
-    // Derniere verif de securite
     if (!hasSpaceFor(p.dataUrl.length)){
       toast('Limite de 100 Mo depassee. Supprimez des photos.', 'e');
       return;
@@ -797,7 +880,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   }
 
   // ============================================================
-  // CHARGEMENT DES PHOTOS
+  // CHARGEMENT
   // ============================================================
   function loadPhotos(){
     return idbGetAll().then(function(arr){
@@ -891,9 +974,38 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   }
 
   // ============================================================
+  // AGE GATE
+  // ============================================================
+  function setupAgeGate(){
+    var gate = $('agegate');
+    var yes = $('ageYes');
+    var no = $('ageNo');
+    if (!gate || !yes || !no) return;
+
+    // Si deja confirme, cacher immediatement
+    if (getCookie('postit_age_ok') === '1'){
+      gate.classList.add('hide');
+    }
+
+    yes.addEventListener('click', function(){
+      setCookie('postit_age_ok', '1', AGE_COOKIE_DAYS);
+      gate.classList.add('hide');
+    });
+
+    no.addEventListener('click', function(){
+      // Redirection immediate
+      try { window.location.replace('https://www.google.com'); }
+      catch(e){ window.location.href = 'https://www.google.com'; }
+    });
+  }
+
+  // ============================================================
   // INIT
   // ============================================================
   function init(){
+    // Age gate en premier
+    setupAgeGate();
+
     // Cookies de censure
     S.cens.nsfw = getCookie('postit_cens_nsfw') === '1';
     S.cens.gore = getCookie('postit_cens_gore') === '1';
@@ -904,13 +1016,23 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if ($('cGore')) $('cGore').checked = S.cens.gore;
     if ($('cOther')) $('cOther').checked = S.cens.other;
 
+    // Filtre memorise
+    var savedFilter = getCookie('postit_filter');
+    if (savedFilter === 'nsfw' || savedFilter === 'gore' || savedFilter === 'other' || savedFilter === 'all'){
+      S.filter = savedFilter;
+    }
+    var chips = document.querySelectorAll('.filter');
+    for (var i = 0; i < chips.length; i++){
+      chips[i].classList.toggle('on', chips[i].getAttribute('data-f') === S.filter);
+    }
+
     // Onglets
     var tabs = ['browse','upload','settings'];
-    for (var i = 0; i < tabs.length; i++){
-      (function(t){
-        var el = $('tab-' + t);
-        if (el) el.addEventListener('click', function(){ go(t); });
-      })(tabs[i]);
+    for (var t = 0; t < tabs.length; t++){
+      (function(tn){
+        var el = $('tab-' + tn);
+        if (el) el.addEventListener('click', function(){ go(tn); });
+      })(tabs[t]);
     }
 
     // Logo + gear
@@ -918,6 +1040,16 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (logo) logo.addEventListener('click', function(e){ e.preventDefault(); go('browse'); });
     var gear = $('gearBtn');
     if (gear) gear.addEventListener('click', function(){ go('settings'); });
+
+    // Filtres
+    var filterBtns = document.querySelectorAll('.filter');
+    for (var f = 0; f < filterBtns.length; f++){
+      (function(btn){
+        btn.addEventListener('click', function(){
+          setFilter(btn.getAttribute('data-f'));
+        });
+      })(filterBtns[f]);
+    }
 
     // Recherche
     var q = $('q');
@@ -944,15 +1076,15 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     var cxl = $('cxlBtn');
     if (cxl) cxl.addEventListener('click', cancelPreview);
 
-    // Pills de classification
+    // Pills
     var pills = document.querySelectorAll('.pil');
     for (var j = 0; j < pills.length; j++){
       (function(el){
         el.addEventListener('click', function(){
           var on = el.classList.toggle('on');
           if (!S.pending) return;
-          var t = el.getAttribute('data-t');
-          if (t) S.pending[t] = on;
+          var tp = el.getAttribute('data-t');
+          if (tp) S.pending[tp] = on;
         });
       })(pills[j]);
     }
@@ -1001,7 +1133,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       }
     });
 
-    // Chargement des photos
+    // Charger photos
     loadPhotos().then(function(){
       render();
       updateStorageUI();
