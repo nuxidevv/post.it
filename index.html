@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
-<title>post.it</title>
+<title>post.it | share anything.</title>
 <style>
 :root{--bg:#0a0a0a;--card:#161616;--in:#1c1c1c;--bd:#262626;--bh:#383838;--tx:#ededed;--dim:#a0a0a0;--mut:#666;--ac:#ededed;--inv:#0a0a0a;--dg:#ff4d4d;--wg:#ffb84d;--ok:#4dff88;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -102,6 +102,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .tg .sl::before{content:'';position:absolute;width:20px;height:20px;left:3px;top:3px;background:#a0a0a0;border-radius:50%;transition:all .2s;}
 .tg input:checked + .sl{background:#ededed;}
 .tg input:checked + .sl::before{transform:translateX(20px);background:#0a0a0a;}
+.mand{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:rgba(77,255,136,.12);border:1px solid rgba(77,255,136,.35);color:#4dff88;}
+.mand .dot{width:6px;height:6px;border-radius:50%;background:#4dff88;box-shadow:0 0 6px #4dff88;}
+.info{font-size:11px;color:#666;margin-top:10px;line-height:1.5;padding:12px;background:#111;border:1px solid #262626;border-radius:8px;}
+.info b{color:#a0a0a0;font-weight:600;}
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:16px;}
 .modal.on{display:flex;}
 .modal img{max-width:100%;max-height:80vh;border-radius:12px;display:block;object-fit:contain;}
@@ -144,10 +148,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       <p id="sub">-</p>
     </div>
     <div class="grid" id="grid"></div>
-    <div class="empty hide" id="empty">
+    <div class="empty" id="empty">
       <div class="ei">&#128247;</div>
       <div class="et">Aucune photo</div>
-      <div class="ed">Essayez un autre mot ou uploadez la premiere photo.</div>
+      <div class="ed">La galerie est vide. Uploadez la premiere photo !</div>
     </div>
   </section>
 
@@ -224,10 +228,14 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       <div class="row">
         <div class="ri">
           <div class="n">Detection IA automatique</div>
-          <div class="d">L'IA analyse les nouvelles images et coche NSFW si besoin.</div>
+          <div class="d">Analyse chaque image a l'upload et coche NSFW si necessaire.</div>
         </div>
-        <label class="tg"><input type="checkbox" id="cIA" checked><span class="sl"></span></label>
+        <span class="mand"><span class="dot"></span>Obligatoire</span>
       </div>
+    </div>
+
+    <div class="info">
+      <b>Note :</b> vos parametres de censure sont enregistres dans des cookies (valables 1 an). Les photos uploadees sont stockees localement dans votre navigateur (IndexedDB) et restent disponibles a chaque visite sur cet appareil.
     </div>
   </section>
 </main>
@@ -245,26 +253,121 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 
   function $(id){ return document.getElementById(id); }
 
+  // ============================================================
+  // COOKIES (parametres utilisateur)
+  // ============================================================
+  var COOKIE_DAYS = 365;
+
+  function setCookie(name, value){
+    try {
+      var d = new Date();
+      d.setTime(d.getTime() + (COOKIE_DAYS * 24 * 60 * 60 * 1000));
+      document.cookie = name + '=' + encodeURIComponent(value)
+        + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
+    } catch(e){}
+  }
+
+  function getCookie(name){
+    try {
+      var parts = document.cookie ? document.cookie.split(';') : [];
+      for (var i = 0; i < parts.length; i++){
+        var c = parts[i].trim();
+        if (c.indexOf(name + '=') === 0){
+          return decodeURIComponent(c.substring(name.length + 1));
+        }
+      }
+    } catch(e){}
+    return null;
+  }
+
+  function delCookie(name){
+    try {
+      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax';
+    } catch(e){}
+  }
+
+  // ============================================================
+  // INDEXEDDB (photos persistantes)
+  // ============================================================
+  var DB_NAME = 'postit_db';
+  var DB_VERSION = 1;
+  var STORE = 'photos';
+
+  function idbOpen(){
+    return new Promise(function(resolve, reject){
+      if (!window.indexedDB){
+        reject(new Error('IndexedDB non supporte'));
+        return;
+      }
+      var req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = function(e){
+        var db = e.target.result;
+        if (!db.objectStoreNames.contains(STORE)){
+          db.createObjectStore(STORE, { keyPath: 'id' });
+        }
+      };
+      req.onsuccess = function(){ resolve(req.result); };
+      req.onerror = function(){ reject(req.error); };
+    });
+  }
+
+  function idbGetAll(){
+    return idbOpen().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction(STORE, 'readonly');
+        var store = tx.objectStore(STORE);
+        var req = store.getAll();
+        req.onsuccess = function(){ resolve(req.result || []); };
+        req.onerror = function(){ reject(req.error); };
+      });
+    });
+  }
+
+  function idbPut(photo){
+    return idbOpen().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction(STORE, 'readwrite');
+        var store = tx.objectStore(STORE);
+        var req = store.put(photo);
+        req.onsuccess = function(){ resolve(); };
+        req.onerror = function(){ reject(req.error); };
+      });
+    });
+  }
+
+  function idbDelete(id){
+    return idbOpen().then(function(db){
+      return new Promise(function(resolve, reject){
+        var tx = db.transaction(STORE, 'readwrite');
+        var store = tx.objectStore(STORE);
+        var req = store.delete(id);
+        req.onsuccess = function(){ resolve(); };
+        req.onerror = function(){ reject(req.error); };
+      });
+    });
+  }
+
+  // ============================================================
+  // ETAT
+  // ============================================================
   var S = {
     photos: [],
     tab: 'browse',
     q: '',
+    // Censure : valeurs lues depuis les cookies
+    // IA toujours active (obligatoire)
     cens: { nsfw:false, gore:false, other:false, ia:true },
     pending: null,
     model: null,
     modelLoading: false,
     modelReady: false,
-    iaFailed: false
+    iaFailed: false,
+    ready: false
   };
 
-  function storeGet(k){
-    try { var r = localStorage.getItem(k); return r ? JSON.parse(r) : null; }
-    catch(e){ return null; }
-  }
-  function storeSet(k, v){
-    try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){}
-  }
-
+  // ============================================================
+  // UTILS
+  // ============================================================
   function esc(s){
     if (s == null) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -279,39 +382,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     var j = Math.floor(h / 24); if (j < 7) return 'il y a ' + j + ' j';
     try { return new Date(ts).toLocaleDateString('fr-FR', { day:'numeric', month:'short' }); }
     catch(e){ return ''; }
-  }
-
-  function ph(c1, c2, label){
-    var s = '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">'
-      + '<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
-      + '<stop offset="0" stop-color="' + c1 + '"/>'
-      + '<stop offset="1" stop-color="' + c2 + '"/>'
-      + '</linearGradient></defs>'
-      + '<rect width="300" height="300" fill="url(%23g)"/>'
-      + '<text x="150" y="165" font-size="22" font-family="sans-serif" font-weight="700" fill="rgba(255,255,255,0.9)" text-anchor="middle">'
-      + label + '</text></svg>';
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s).replace(/%2523/g, '%23');
-  }
-
-  function buildDemo(){
-    var raw = [
-      { id:'d1', title:'Coucher de soleil en montagne', c1:'#ff7e5f', c2:'#feb47b', lbl:'Nature',
-        tags:['nature','montagne'], nsfw:false, gore:false, other:false, date: Date.now() - 86400000*3 },
-      { id:'d2', title:'Chaton tout mignon', c1:'#4facfe', c2:'#00f2fe', lbl:'Animal',
-        tags:['animal'], nsfw:false, gore:false, other:false, date: Date.now() - 86400000*2 },
-      { id:'d3', title:'Art abstrait', c1:'#8e2de2', c2:'#4a00e0', lbl:'Art',
-        tags:['art'], nsfw:false, gore:false, other:true, date: Date.now() - 86400000*5 },
-      { id:'d4', title:'Neons urbains la nuit', c1:'#fc466b', c2:'#3f5efb', lbl:'Urbain',
-        tags:['urbain','nuit'], nsfw:false, gore:false, other:false, date: Date.now() - 86400000 },
-      { id:'d5', title:'Foret brumeuse', c1:'#134e5e', c2:'#71b280', lbl:'Nature',
-        tags:['nature'], nsfw:false, gore:false, other:false, date: Date.now() - 3600000*12 },
-      { id:'d6', title:'Galaxie lointaine', c1:'#200122', c2:'#6f0000', lbl:'Espace',
-        tags:['espace'], nsfw:false, gore:false, other:false, date: Date.now() - 86400000*7 }
-    ];
-    for (var i = 0; i < raw.length; i++){
-      raw[i].dataUrl = ph(raw[i].c1, raw[i].c2, raw[i].lbl);
-    }
-    return raw;
   }
 
   function toast(msg, type){
@@ -329,17 +399,24 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     }, type === 'w' ? 5000 : 2800);
   }
 
+  // ============================================================
+  // CENSURE
+  // ============================================================
   function censored(p){
     var c = S.cens;
     if (p.nsfw && c.nsfw) return true;
     if (p.gore && c.gore) return true;
     if (p.other && c.other) return true;
-    if (p.aiFlag && c.ia) return true;
+    if (p.aiFlag) return true; // IA toujours appliquee
     return false;
   }
 
+  // ============================================================
+  // NAVIGATION
+  // ============================================================
   function go(tab){
     S.tab = tab;
+    setCookie('postit_tab', tab);
     var panes = ['browse', 'upload', 'settings'];
     for (var i = 0; i < panes.length; i++){
       var t = panes[i];
@@ -351,6 +428,9 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (tab === 'browse') render();
   }
 
+  // ============================================================
+  // RENDU
+  // ============================================================
   function render(){
     var grid = $('grid');
     var empty = $('empty');
@@ -380,7 +460,16 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 
     if (!list.length){
       grid.innerHTML = '';
-      if (empty) empty.classList.remove('hide');
+      if (empty){
+        empty.classList.remove('hide');
+        if (S.q){
+          empty.querySelector('.et').textContent = 'Aucun resultat';
+          empty.querySelector('.ed').textContent = 'Aucune photo ne correspond a "' + S.q + '".';
+        } else {
+          empty.querySelector('.et').textContent = 'Aucune photo';
+          empty.querySelector('.ed').textContent = 'La galerie est vide. Uploadez la premiere photo !';
+        }
+      }
       return;
     }
     if (empty) empty.classList.add('hide');
@@ -393,7 +482,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       if (p.nsfw) badges += '<span class="bg n">NSFW</span>';
       if (p.gore) badges += '<span class="bg g">GORE</span>';
       if (p.other) badges += '<span class="bg o">SENSIBLE</span>';
-      if (p.aiFlag && S.cens.ia) badges += '<span class="bg i">IA</span>';
+      if (p.aiFlag) badges += '<span class="bg i">IA</span>';
 
       html += '<div class="card" data-id="' + esc(p.id) + '">'
         + '<div class="ibox">'
@@ -429,6 +518,9 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     }
   }
 
+  // ============================================================
+  // MODAL
+  // ============================================================
   function openModal(id){
     var p = null;
     for (var i = 0; i < S.photos.length; i++){
@@ -447,6 +539,9 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (m) m.classList.remove('on');
   }
 
+  // ============================================================
+  // UPLOAD
+  // ============================================================
   function handleFile(f){
     if (!f || !f.type || f.type.indexOf('image/') !== 0){
       toast('Format non supporte', 'e');
@@ -482,7 +577,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     var pills = document.querySelectorAll('.pil');
     for (var i = 0; i < pills.length; i++) pills[i].classList.remove('on');
     $('pv').classList.add('on');
-    if (S.cens.ia) analyzePending();
+    analyzePending();
   }
 
   function cancelPreview(){
@@ -497,8 +592,8 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     var tEl = $('ptitle');
     var title = (tEl && tEl.value.trim()) || 'Sans titre';
 
-    S.photos.unshift({
-      id: 'u' + Date.now() + Math.floor(Math.random() * 1000),
+    var photo = {
+      id: 'u' + Date.now() + Math.floor(Math.random() * 100000),
       title: title,
       dataUrl: p.dataUrl,
       tags: [],
@@ -507,37 +602,39 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       other: !!p.other,
       aiFlag: !!p.aiFlag,
       date: Date.now()
+    };
+
+    S.photos.unshift(photo);
+
+    idbPut(photo).then(function(){
+      cancelPreview();
+      go('browse');
+      toast('Photo publiee et enregistree !', 's');
+    }).catch(function(){
+      cancelPreview();
+      go('browse');
+      toast('Photo publiee (non persistee)', 'w');
     });
-
-    savePhotos();
-    cancelPreview();
-    go('browse');
-    toast('Photo publiee !', 's');
   }
 
+  // ============================================================
+  // CHARGEMENT DES PHOTOS (IndexedDB)
+  // ============================================================
   function loadPhotos(){
-    var saved = storeGet('postit_photos_v5');
-    if (saved && saved.length){ S.photos = saved; }
-    else { S.photos = buildDemo(); }
-  }
-  function savePhotos(){
-    try { storeSet('postit_photos_v5', S.photos.slice(0, 30)); } catch(e){}
-  }
-
-  function loadCens(){
-    var saved = storeGet('postit_cens_v5');
-    if (saved && typeof saved === 'object'){
-      if (typeof saved.nsfw === 'boolean') S.cens.nsfw = saved.nsfw;
-      if (typeof saved.gore === 'boolean') S.cens.gore = saved.gore;
-      if (typeof saved.other === 'boolean') S.cens.other = saved.other;
-      if (typeof saved.ia === 'boolean') S.cens.ia = saved.ia;
-    }
-    if ($('cNsfw')) $('cNsfw').checked = S.cens.nsfw;
-    if ($('cGore')) $('cGore').checked = S.cens.gore;
-    if ($('cOther')) $('cOther').checked = S.cens.other;
-    if ($('cIA')) $('cIA').checked = S.cens.ia;
+    return idbGetAll().then(function(arr){
+      arr.sort(function(a, b){ return (b.date || 0) - (a.date || 0); });
+      S.photos = arr;
+      return arr;
+    }).catch(function(err){
+      console.warn('IndexedDB indisponible :', err);
+      S.photos = [];
+      return [];
+    });
   }
 
+  // ============================================================
+  // IA
+  // ============================================================
   function loadScript(src){
     return new Promise(function(resolve, reject){
       var s = document.createElement('script');
@@ -551,7 +648,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 
   function loadModel(){
     if (S.modelReady || S.modelLoading || S.iaFailed) return;
-    if (!S.cens.ia) return;
     S.modelLoading = true;
     Promise.resolve()
       .then(function(){ return loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js'); })
@@ -565,6 +661,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         S.modelReady = true;
       })
       .catch(function(err){
+        console.warn('IA indisponible :', err);
         S.iaFailed = true;
       })
       .then(function(){
@@ -617,11 +714,21 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     });
   }
 
+  // ============================================================
+  // INITIALISATION
+  // ============================================================
   function init(){
-    loadCens();
-    loadPhotos();
+    // 1) Lire les cookies de censure
+    S.cens.nsfw = getCookie('postit_cens_nsfw') === '1';
+    S.cens.gore = getCookie('postit_cens_gore') === '1';
+    S.cens.other = getCookie('postit_cens_other') === '1';
+    S.cens.ia = true; // toujours actif
 
-    // Tabs
+    if ($('cNsfw')) $('cNsfw').checked = S.cens.nsfw;
+    if ($('cGore')) $('cGore').checked = S.cens.gore;
+    if ($('cOther')) $('cOther').checked = S.cens.other;
+
+    // 2) Brancher les onglets
     var tabs = ['browse','upload','settings'];
     for (var i = 0; i < tabs.length; i++){
       (function(t){
@@ -630,13 +737,13 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       })(tabs[i]);
     }
 
-    // Logo + gear
+    // 3) Logo + gear
     var logo = $('logoBtn');
     if (logo) logo.addEventListener('click', function(e){ e.preventDefault(); go('browse'); });
     var gear = $('gearBtn');
     if (gear) gear.addEventListener('click', function(){ go('settings'); });
 
-    // Search
+    // 4) Recherche
     var q = $('q');
     var qt;
     if (q) q.addEventListener('input', function(){
@@ -648,20 +755,20 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       }, 180);
     });
 
-    // File input
+    // 5) Input file
     var file = $('file');
     if (file) file.addEventListener('change', function(){
       if (file.files && file.files[0]) handleFile(file.files[0]);
       file.value = '';
     });
 
-    // Publish / cancel
+    // 6) Publish / cancel
     var pub = $('pubBtn');
     if (pub) pub.addEventListener('click', publish);
     var cxl = $('cxlBtn');
     if (cxl) cxl.addEventListener('click', cancelPreview);
 
-    // Pills
+    // 7) Pills classification
     var pills = document.querySelectorAll('.pil');
     for (var j = 0; j < pills.length; j++){
       (function(el){
@@ -674,12 +781,11 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       })(pills[j]);
     }
 
-    // Settings checkboxes
+    // 8) Parametres (cookies)
     var sett = [
-      { id:'cNsfw', key:'nsfw' },
-      { id:'cGore', key:'gore' },
-      { id:'cOther', key:'other' },
-      { id:'cIA', key:'ia' }
+      { id:'cNsfw', key:'nsfw', cookie:'postit_cens_nsfw' },
+      { id:'cGore', key:'gore', cookie:'postit_cens_gore' },
+      { id:'cOther', key:'other', cookie:'postit_cens_other' }
     ];
     for (var s = 0; s < sett.length; s++){
       (function(k){
@@ -687,13 +793,13 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         if (!el) return;
         el.addEventListener('change', function(){
           S.cens[k.key] = el.checked;
-          storeSet('postit_cens_v5', S.cens);
+          setCookie(k.cookie, el.checked ? '1' : '0');
           render();
         });
       })(sett[s]);
     }
 
-    // Modal
+    // 9) Modal
     var mc = $('mclose');
     if (mc) mc.addEventListener('click', closeModal);
     var modal = $('modal');
@@ -704,13 +810,19 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       if (e.key === 'Escape') closeModal();
     });
 
-    // Initial render
-    render();
+    // 10) Charger les photos depuis IndexedDB puis afficher
+    loadPhotos().then(function(){
+      S.ready = true;
+      render();
+      // Onglet memorise
+      var lastTab = getCookie('postit_tab');
+      if (lastTab === 'upload' || lastTab === 'settings' || lastTab === 'browse'){
+        go(lastTab);
+      }
+    });
 
-    // Lazy IA
-    if (S.cens.ia){
-      setTimeout(function(){ try { loadModel(); } catch(e){} }, 2500);
-    }
+    // 11) Lancer l'IA en arriere-plan (obligatoire)
+    setTimeout(function(){ try { loadModel(); } catch(e){} }, 2000);
   }
 
   if (document.readyState === 'loading'){
