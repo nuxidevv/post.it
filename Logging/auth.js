@@ -3,7 +3,7 @@
 
   var CONFIG = {
     CLIENT_ID: '1558442996695957556',
-    REDIRECT_URI: 'https://post-it-rho-bice.vercel.app',
+    REDIRECT_URI: 'https://post-it-galery.vercel.app',
     ADMIN_ID: '1535798111799091250'
   };
 
