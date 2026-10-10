@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>post.it — partage de photos</title>
+
+<!-- TensorFlow.js + NSFWJS pour la détection IA -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/nsfwjs@4.1.0/dist/nsfwjs.min.js"></script>
+
+<style>
+/* ============================================================
+   POST.IT — design gris sombre, inspiré de catgirl.vercel.app
+   ============================================================ */
+:root{
+  --bg:#0a0a0a;
+  --bg-elev:#111111;
+  --bg-card:#161616;
+  --bg-input:#1c1c1c;
+  --border:#262626;
+  --border-hover:#333333;
+  --text:#ededed;
+  --text-dim:#a0a0a0;
+  --text-mute:#666666;
+  --accent:#ededed;
+  --accent-inv:#0a0a0a;
+  --danger:#ff4d4d;
+  --warn:#ffb84d;
+  --ok:#4dff88;
+  --radius:10px;
+  --radius-sm:6px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: "SF Mono", "Fira Code", "Fira Mono", monospace;
+  --shadow: 0 4px 24px rgba(0,0,0,.5);
+  --blur-amount: 22px;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:14px;
+  line-height:1.5;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- SCROLLBAR ---------- */
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#3a3a3a;}
+
+/* ---------- HEADER ---------- */
+header{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,10,10,.85);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;
+}
+.header-inner{
+  max-width:1200px;margin:0 auto;
+  display:flex;align-items:center;gap:20px;
+  height:56px;
+}
+.logo{
+  font-size:18px;font-weight:700;letter-spacing:-.4px;
+  color:var(--text);text-decoration:none;
+  display:flex;align-items:center;gap:8px;
+  white-space:nowrap;
+}
+.logo .dot{color:var(--text-mute);}
+.logo-badge{
+  font-size:10px;font-weight:500;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  color:var(--text-mute);
+  padding:2px 7px;border-radius:99px;
+  letter-spacing:.3px;
+}
+
+/* ---------- SEARCH BAR ---------- */
+.search-wrap{
+  flex:1;max-width:420px;position:relative;
+}
+.search-wrap svg{
+  position:absolute;left:12px;top:50%;transform:translateY(-50%);
+  width:16px;height:16px;color:var(--text-mute);pointer-events:none;
+}
+.search-input{
+  width:100%;height:36px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  padding:0 12px 0 36px;
+  font-size:13px;font-family:var(--font);
+  outline:none;transition:border-color .15s;
+}
+.search-input::placeholder{color:var(--text-mute);}
+.search-input:focus{border-color:var(--border-hover);}
+
+.header-actions{display:flex;align-items:center;gap:8px;margin-left:auto;}
+
+/* ---------- BUTTONS ---------- */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:36px;padding:0 14px;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+  background:var(--bg-card);
+  color:var(--text);
+  font-size:13px;font-weight:500;font-family:var(--font);
+  cursor:pointer;transition:all .15s;
+  white-space:nowrap;user-select:none;
+}
+.btn:hover{background:#1e1e1e;border-color:var(--border-hover);}
+.btn:active{transform:scale(.97);}
+.btn-primary{
+  background:var(--accent);color:var(--accent-inv);
+  border-color:var(--accent);font-weight:600;
+}
+.btn-primary:hover{background:#fff;border-color:#fff;}
+.btn-ghost{background:transparent;border-color:transparent;color:var(--text-dim);}
+.btn-ghost:hover{background:var(--bg-card);color:var(--text);}
+.btn-icon{width:36px;padding:0;}
+
+/* ---------- MAIN ---------- */
+main{flex:1;max-width:1200px;margin:0 auto;padding:28px 24px 80px;width:100%;}
+
+/* ---------- TABS ---------- */
+.tabs{
+  display:flex;gap:4px;margin-bottom:24px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:0;
+}
+.tab{
+  padding:10px 16px;font-size:13px;font-weight:500;
+  color:var(--text-mute);cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-1px;transition:all .15s;
+  background:none;border-top:none;border-left:none;border-right:none;
+  font-family:var(--font);
+}
+.tab:hover{color:var(--text-dim);}
+.tab.active{color:var(--text);border-bottom-color:var(--accent);}
+
+/* ---------- SECTION HEADER ---------- */
+.section-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;gap:12px;flex-wrap:wrap;
+}
+.section-title{font-size:16px;font-weight:600;letter-spacing:-.2px;}
+.section-sub{font-size:12px;color:var(--text-mute);margin-top:2px;}
+
+/* ---------- GALLERY GRID ---------- */
+.gallery{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:12px;
+}
+@media(max-width:600px){.gallery{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;}}
+
+.card{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+  transition:border-color .15s, transform .15s;
+  position:relative;
+}
+.card:hover{border-color:var(--border-hover);transform:translateY(-2px);}
+
+.card-img-wrap{
+  position:relative;
+  width:100%;
+  aspect-ratio:1/1;
+  overflow:hidden;
+  background:#0d0d0d;
+}
+.card-img-wrap img{
+  width:100%;height:100%;object-fit:cover;
+  display:block;
+  transition:filter .3s;
+}
+.card-img-wrap img.censored{
+  filter:blur(var(--blur-amount)) brightness(.6);
+  transform:scale(1.08);
+}
+
+/* overlay pour censure */
+.censor-overlay{
+  position:absolute;inset:0;
+  display:none;
+  align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;
+  background:rgba(0,0,0,.55);
+  backdrop-filter:blur(2px);
+  z-index:2;
+  cursor:pointer;
+}
+.censor-overlay.visible{display:flex;}
+.censor-overlay .icon{font-size:28px;opacity:.9;}
+.censor-overlay .label{
+  font-size:11px;font-weight:600;letter-spacing:.5px;
+  text-transform:uppercase;color:var(--text-dim);
+}
+.censor-overlay .hint{
+  font-size:10px;color:var(--text-mute);
+  margin-top:2px;
+}
+
+/* badges sur carte */
+.card-badges{
+  position:absolute;top:8px;left:8px;
+  display:flex;gap:4px;z-index:3;
+}
+.badge{
+  font-size:9px;font-weight:700;
+  letter-spacing:.6px;text-transform:uppercase;
+  padding:3px 7px;border-radius:4px;
+  backdrop-filter:blur(8px);
+}
+.badge-nsfw{background:rgba(255,77,77,.85);color:#fff;}
+.badge-gore{background:rgba(255,140,0,.85);color:#fff;}
+.badge-safe{background:rgba(77,255,136,.75);color:#0a0a0a;}
+.badge-flagged{
+  background:rgba(255,77,77,.15);
+  border:1px solid rgba(255,77,77,.4);
+  color:var(--danger);
+}
+
+.card-body{padding:12px 14px;}
+.card-title{
+  font-size:13px;font-weight:500;color:var(--text);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:4px;
+}
+.card-meta{
+  display:flex;align-items:center;gap:10px;
+  font-size:11px;color:var(--text-mute);
+}
+.card-meta .tag{
+  background:var(--bg-input);padding:2px 6px;
+  border-radius:4px;font-size:10px;
+}
+
+/* ---------- EMPTY STATE ---------- */
+.empty{
+  text-align:center;padding:64px 20px;
+  color:var(--text-mute);
+}
+.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4;}
+.empty-title{font-size:15px;font-weight:500;color:var(--text-dim);margin-bottom:6px;}
+.empty-text{font-size:13px;max-width:340px;margin:0 auto;line-height:1.6;}
+
+/* ---------- UPLOAD ZONE ---------- */
+.upload-zone{
+  border:1.5px dashed var(--border);
+  border-radius:var(--radius);
+  padding:48px 24px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  background:var(--bg-elev);
+  position:relative;
+}
+.upload-zone:hover,
+.upload-zone.dragover{
+  border-color:var(--accent);
+  background:#141414;
+}
+.upload-zone .icon{font-size:36px;margin-bottom:12px;opacity:.5;}
+.upload-zone .title{
+  font-size:15px;font-weight:600;color:var(--text);
+  margin-bottom:6px;
+}
+.upload-zone .sub{
+  font-size:12px;color:var(--text-mute);
+  margin-bottom:16px;
+}
+
+/* preview d'upload */
+.upload-preview{
+  display:none;
+  margin-top:20px;
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  overflow:hidden;
+}
+.upload-preview.visible{display:block;}
+.upload-preview-inner{
+  display:flex;gap:20px;padding:20px;
+  flex-wrap:wrap;
+}
+.upload-preview img{
+  width:180px;height:180px;object-fit:cover;
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+}
+.upload-preview-info{flex:1;min-width:220px;}
+.upload-preview-info h4{
+  font-size:14px;font-weight:600;margin-bottom:14px;
+}
+.field{margin-bottom:14px;}
+.field label{
+  display:block;font-size:12px;font-weight:500;
+  color:var(--text-dim);margin-bottom:5px;
+}
+.field input[type="text"]{
+  width:100%;height:36px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  color:var(--text);
+  padding:0 12px;font-size:13px;font-family:var(--font);
+  outline:none;transition:border-color .15s;
+}
+.field input[type="text"]:focus{border-color:var(--border-hover);}
+
+/* checkbox pill */
+.check-group{display:flex;flex-wrap:wrap;gap:8px;}
+.check-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 12px;
+  background:var(--bg-input);
+  border:1px solid var(--border);
+  border-radius:99px;
+  cursor:pointer;
+  font-size:12px;font-weight:500;
+  transition:all .15s;
+  user-select:none;
+}
+.check-pill:hover{border-color:var(--border-hover);}
+.check-pill input{display:none;}
+.check-pill .dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--border);
+  transition:background .15s;
+}
+.check-pill.checked-nsfw{border-color:var(--danger);background:rgba(255,77,77,.1);}
+.check-pill.checked-nsfw .dot{background:var(--danger);}
+.check-pill.checked-gore{border-color:var(--warn);background:rgba(255,184,77,.1);}
+.check-pill.checked-gore .dot{background:var(--warn);}
+.check-pill.checked-other{border-color:var(--text-dim);background:rgba(160,160,160,.1);}
+.check-pill.checked-other .dot{background:var(--text-dim);}
+
+/* ---------- SETTINGS ---------- */
+.settings-panel{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px;
+  max-width:560px;
+}
+.settings-panel h3{
+  font-size:15px;font-weight:600;margin-bottom:20px;
+  padding-bottom:12px;border-bottom:1px solid var(--border);
+}
+.setting-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 0;
+  border-bottom:1px solid var(--border);
+}
+.setting-row:last-child{border-bottom:none;}
+.setting-info{flex:1;padding-right:16px;}
+.setting-info .name{font-size:13px;font-weight:500;margin-bottom:3px;}
+.setting-info .desc{font-size:11px;color:var(--text-mute);line-height:1.4;}
+
+/* toggle switch */
+.toggle{
+  position:relative;width:40px;height:22px;flex-shrink:0;
+}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle .slider{
+  position:absolute;inset:0;
+  background:var(--border);
+  border-radius:99px;
+  cursor:pointer;transition:background .2s;
+}
+.toggle .slider::before{
+  content:'';position:absolute;
+  width:16px;height:16px;
+  left:3px;top:3px;
+  background:var(--text-dim);
+  border-radius:50%;transition:all .2s;
+}
+.toggle input:checked + .slider{background:var(--accent);}
+.toggle input:checked + .slider::before{
+  transform:translateX(18px);
+  background:var(--accent-inv);
+}
+
+/* ---------- MODAL (lightbox) ---------- */
+.modal-overlay{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,.88);
+  backdrop-filter:blur(12px);
+  display:none;align-items:center;justify-content:center;
+  padding:24px;
+}
+.modal-overlay.open{display:flex;}
+.modal-content{
+  max-width:90vw;max-height:90vh;
+  position:relative;
+  border-radius:var(--radius);
+  overflow:hidden;
+  box-shadow:var(--shadow);
+  background:var(--bg-card);
+}
+.modal-content img{
+  max-width:90vw;max-height:80vh;
+  display:block;object-fit:contain;
+}
+.modal-content img.censored{
+  filter:blur(var(--blur-amount)) brightness(.6);
+  transform:scale(1.08);
+}
+.modal-close{
+  position:absolute;top:12px;right:12px;
+  width:32px;height:32px;
+  background:rgba(0,0,0,.7);
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:50%;
+  color:#fff;font-size:16px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;z-index:10;
+  transition:background .15s;
+}
+.modal-close:hover{background:rgba(0,0,0,.9);}
+
+/* ---------- TOAST ---------- */
+.toast-container{
+  position:fixed;bottom:24px;right:24px;
+  z-index:2000;display:flex;flex-direction:column;gap:8px;
+}
+.toast{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  padding:12px 16px;
+  font-size:13px;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:var(--shadow);
+  animation:toastIn .25s ease;
+  max-width:340px;
+}
+.toast.success{border-left:3px solid var(--ok);}
+.toast.error{border-left:3px solid var(--danger);}
+.toast.warn{border-left:3px solid var(--warn);}
+@keyframes toastIn{
+  from{opacity:0;transform:translateY(12px);}
+  to{opacity:1;transform:translateY(0);}
+}
+
+/* ---------- HIDDEN ---------- */
+.hidden{display:none !important;}
+
+/* ---------- SCAN INDICATOR ---------- */
+.scan-indicator{
+  display:none;
+  align-items:center;gap:8px;
+  font-size:11px;color:var(--text-mute);
+  padding:6px 10px;
+  background:var(--bg-elev);
+  border:1px solid var(--border);
+  border-radius:99px;
+  margin-top:8px;
+}
+.scan-indicator.visible{display:inline-flex;}
+.spinner{
+  width:12px;height:12px;
+  border:2px solid var(--border);
+  border-top-color:var(--text-dim);
+  border-radius:50%;
+  animation:spin .6s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<!-- ================= HEADER ================= -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo" onclick="switchTab('browse');return false;">
+      post<span class="dot">.</span>it
+      <span class="logo-badge">beta</span>
+    </a>
+
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
+      </svg>
+      <input type="text" class="search-input" id="searchInput"
+             placeholder="Rechercher des photos…" autocomplete="off">
+    </div>
+
+    <div class="header-actions">
+      <button class="btn" onclick="switchTab('upload')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        Upload
+      </button>
+      <button class="btn btn-icon btn-ghost" onclick="switchTab('settings')" title="Paramètres">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 -->
+ 0 1 1-2.83-2.83l.06 -.06A1.65 1.65  <0 0 0 4.6 15asection1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2 id.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" data-tab="browse" onclick="switchTab('browse')">Explorer</button>
+    <button class="tab" data-tab="upload" onclick="switchTab('upload')">Uploader</button>
+    <button class="tab" data-tab="settings" onclick="switchTab('settings')">Paramètres</button>
+  </div>
+
+  <!-- ====== TAB BROWSE ====== -->
+  <section id="tab-browse">
+    <div class="section-head">
+      <div>
+        <div class="section-title" id="galleryTitle">Toutes les photos</div>
+        <div class="section-sub" id="gallerySub">— chargement…</div>
+      </div>
+      <div class="scan-indicator" id="scanIndicator">
+        <div class="spinner"></div>
+        <span id="scanText">Détection IA en cours…</span>
+      </div>
+    </div>
+
+    <div class="gallery" id="gallery"></div>
+
+    <div class="empty hidden" id="emptyState">
+      <div class="empty-icon">📷</div>
+      <div class="empty-title">Aucune photo trouvée</div>
+      <div class="empty-text">
+        Essayez un autre terme de recherche ou uploadez la première photo !
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TAB UPLOAD ====== -->
+  <section id="tab-upload" class="hidden">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Uploader une photo</div>
+        <div class="section-sub">Déclarez le contenu pour que les autres puissent le censurer.</div>
+      </div>
+    </div>
+
+    <div class="upload-zone" id="uploadZone">
+      <div class="icon">⬆️</div>
+      <div class="title">Glissez une image ici</div>
+      <div class="sub">ou cliquez pour parcourir — JPG, PNG, WebP, GIF (max 10 Mo)</div>
+      <button class="btn btn-primary" type="button" onclick="document.getElementById('fileInput').click()">
+        Choisir un fichier
+      </button>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+    </div>
+
+    <!-- Preview -->
+    <div class="upload-preview" id="uploadPreview">
+      <div class="upload-preview-inner">
+        <img id="previewImg" src="" alt="aperçu">
+        <div class="upload-preview-info">
+          <h4 id="previewName">image.jpg</h4>
+
+          <div class="field">
+            <label>Titre</label>
+            <input type="text" id="uploadTitle" placeholder="Donnez un titre à votre photo…" maxlength="80">
+          </div>
+
+          <div class="field">
+            <label>Classification du contenu</label>
+            <div class="check-group">
+              <label class="check-pill" id="pillNsfw" onclick="togglePill(this,'nsfw')">
+                <input type="checkbox" id="chkNsfw">
+                <span class="dot"></span> NSFW / Adulte
+              </label>
+              <label class="check-pill" id="pillGore" onclick="togglePill(this,'gore')">
+                <input type="checkbox" id="chkGore">
+                <span class="dot"></span> Gore / Violence
+              </label>
+              <label class="check-pill" id="pillOther" onclick="togglePill(this,'other')">
+                <input type="checkbox" id="chkOther">
+                <span class="dot"></span> Autre sensible
+              </label>
+            </div>
+          </div>
+
+          <div class="scan-indicator" id="uploadScanIndicator">
+            <div class="spinner"></div>
+            <span>Analyse IA de sécurité…</span>
+          </div>
+
+          <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="confirmUpload()">Publier</button>
+            <button class="btn" onclick="cancelUpload()">Annuler</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====== TAB SETTINGS ======="tab-settings" class="hidden">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Paramètres de censure</div>
+        <div class="section-sub">Choisissez ce qui doit être flouté dans la galerie.</div>
+      </div>
+    </div>
+
+    <div class="settings-panel">
+      <h3>Contenu à censurer</h3>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="name">NSFW / Adulte</div>
+          <div class="desc">Floute les images classées comme contenu sexuel explicite.</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="setNsfw" checked onchange="saveSettings()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="name">Gore / Violence</div>
+          <div class="desc">Floute les images contenant du sang, des blessures ou de la violence.</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="setGore" checked onchange="saveSettings()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="name">Autres contenus sensibles</div>
+          <div class="desc">Floute les images marquées comme « autres » (drogues, armes, etc.).</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="setOther" checked onchange="saveSettings()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-info">
+          <div class="name">Détection IA automatique</div>
+          <div class="desc">Signale et floute automatiquement les images dangereuses non déclarées.</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="setAutoIA" checked onchange="saveSettings()">
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= MODAL LIGHTBOX ================= -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <img id="modalImg" src="" alt="">
+  </div>
+</div>
+
+<!-- ================= TOASTS ================= -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ============================================================
+   POST.IT — logique applicative
+   ============================================================ */
+
+// ---- ÉTAT GLOBAL ----
+const state = {
+  photos: [],
+  filtered: [],
+  currentTab: 'browse',
+  searchQuery: '',
+  settings: {
+    censorNsfw: true,
+    censorGore: true,
+    censorOther: true,
+    autoIA: true,
+  },
+  pendingUpload: null,       // { dataUrl, file, title, nsfw, gore, other }
+  nsfwModel: null,
+  modelLoading: false,
+  modelReady: false,
+};
+
+// ---- DONNÉES DE DÉMO ----
+const DEMO_PHOTOS = [
+  {
+    id: 'demo-1',
+    title: 'Paysage de montagne au coucher du soleil',
+    dataUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
+    tags: [],
+    nsfw: false, gore: false, other: false,
+    aiFlagged: false,
+    date: Date.now() - 86400000 * 3,
+  },
+  {
+    id: 'demo-2',
+    title: 'Chaton mignon dans un panier',
+    dataUrl: 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=600&q=80',
+    tags: ['animal'],
+    nsfw: false, gore: false, other: false,
+    aiFlagged: false,
+    date: Date.now() - 86400000 * 2,
+  },
+  {
+    id: 'demo-3',
+    title: 'Art abstrait sombre',
+    dataUrl: 'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&q=80',
+    tags: ['art'],
+    nsfw: false, gore: false, other: true,
+    aiFlagged: false,
+    date: Date.now() - 86400000 * 5,
+  },
+  {
+    id: 'demo-4',
+    title: 'Ville la nuit — néons',
+    dataUrl: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=600&q=80',
+    tags: ['urbain'],
+    nsfw: false, gore: false, other: false,
+    aiFlagged: false,
+    date: Date.now() - 86400000 * 1,
+  },
+  {
+    id: 'demo-5',
+    title: 'Forêt brumeuse',
+    dataUrl: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80',
+    tags: ['nature'],
+    nsfw: false, gore: false, other: false,
+    aiFlagged: false,
+    date: Date.now() - 86400000 * 0.5,
+  },
+  {
+    id: 'demo-6',
+    title: 'Espace — galaxie',
+    dataUrl: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600&q=80',
+    tags: ['espace'],
+    nsfw: false, gore: false, other: false,
+    aiFlagged: false,
+    date: Date.now() - 86400000 * 7,
+  },
+];
+
+// ---- INITIALISATION ----
+document.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  loadPhotos();
+  renderGallery();
+  initUploadZone();
+  initSearch();
+  initModel();
+});
+
+// ---- NAVIGATION ONGLETS ----
+function switchTab(tab) {
+  state.currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === tab);
+  });
+  ['browse', 'upload', 'settings'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+  });
+  if (tab === 'browse') renderGallery();
+}
+
+// ---- RECHERCHE ----
+function initSearch() {
+  const input = document.getElementById('searchInput');
+  let debounce;
+  input.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      state.searchQuery = input.value.trim().toLowerCase();
+      renderGallery();
+    }, 200);
+  });
+}
+
+// ---- PARAMÈTRES ----
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem('postit_settings');
+    if (raw) {
+      const s = JSON.parse(raw);
+      state.settings = { ...state.settings, ...s };
+    }
+  } catch (e) { /* ignore */ }
+  document.getElementById('setNsfw').checked = state.settings.censorNsfw;
+  document.getElementById('setGore').checked = state.settings.censorGore;
+  document.getElementById('setOther').checked = state.settings.censorOther;
+  document.getElementById('setAutoIA').checked = state.settings.autoIA;
+}
+
+function saveSettings() {
+  state.settings.censorNsfw = document.getElementById('setNsfw').checked;
+  state.settings.censorGore = document.getElementById('setGore').checked;
+  state.settings.censorOther = document.getElementById('setOther').checked;
+  state.settings.autoIA = document.getElementById('setAutoIA').checked;
+  try {
+    localStorage.setItem('postit_settings', JSON.stringify(state.settings));
+  } catch (e) { /* ignore */ }
+  renderGallery();
+  showToast('Paramètres sauvegardés', 'success');
+}
+
+// ---- PHOTOS (persistance locale) ----
+function loadPhotos() {
+  try {
+    const raw = localStorage.getItem('postit_photos');
+    if (raw) {
+      const saved = JSON.parse(raw);
+      if (Array.isArray(saved) && saved.length) {
+        state.photos = saved;
+        return;
+      }
+    }
+  } catch (e) { /* ignore */ }
+  state.photos = DEMO_PHOTOS;
+}
+
+function persistPhotos() {
+  try {
+    // on ne sauvegarde que les métadonnées + dataUrl pour les images uploadées
+    localStorage.setItem('postit_photos', JSON.stringify(state.photos));
+  } catch (e) {
+    console.warn('Stockage local plein, certaines photos ne seront pas persistées.');
+  }
+}
+
+// ---- RENDU GALERIE ----
+function renderGallery() {
+  const gallery = document.getElementById('gallery');
+  const empty = document.getElementById('emptyState');
+  const title = document.getElementById('galleryTitle');
+  const sub = document.getElementById('gallerySub');
+
+  let list = [...state.photos];
+
+  // filtre recherche
+  if (state.searchQuery) {
+    const q = state.searchQuery;
+    list = list.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      (p.tags || []).some(t => t.toLowerCase().includes(q))
+    );
+    title.textContent = `Résultats pour « ${state.searchQuery} »`;
+  } else {
+    title.textContent = 'Toutes les photos';
+  }
+
+  // tri par date desc
+  list.sort((a, b) => (b.date || 0) - (a.date || 0));
+
+  sub.textContent = `${list.length} photo${list.length > 1 ? 's' : ''}`;
+
+  if (!list.length) {
+    gallery.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  gallery.innerHTML = list.map(p => renderCard(p)).join('');
+}
+
+// ---- CARTE PHOTO ----
+function renderCard(photo) {
+  const shouldCensor = shouldCensorPhoto(photo);
+  const isFlagged = photo.aiFlagged && state.settings.autoIA;
+
+  // badges
+  let badges = '';
+  if (photo.nsfw) badges += '<span class="badge badge-nsfw">NSFW</span>';
+  if (photo.gore) badges += '<span class="badge badge-gore">GORE</span>';
+  if (photo.other) badges += '<span class="badge badge-other" style="background:rgba(160,160,160,.8);color:#fff;">SENSIBLE</span>';
+  if (isFlagged) badges += '<span class="badge badge-flagged" title="Détecté par IA comme potentiellement dangereux">⚠ IA</span>';
+
+  // overlay censure
+  const overlay = shouldCensor ? `
+    <div class="censor-overlay visible" onclick="revealCard(this)">
+      <div class="icon">🔒</div>
+      <div class="label">Contenu masqué</div>
+      <div class="hint">Cliquez pour révéler</div>
+    </div>` : '';
+
+  return `
+    <div class="card" data-id="${photo.id}">
+      <div class="card-img-wrap" onclick="openModal('${photo.id}')">
+        <img src="${photo.dataUrl}" alt="${escapeHtml(photo.title)}"
+             class="${shouldCensor ? 'censored' : ''}"
+             loading="lazy"
+             onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%22200%22><rect fill=%22%23161616%22 width=%22200%22 height=%22200%22/><text x=%2250%%22 y=%2250%%22 fill=%22%23444%22 font-size=%2212%22 text-anchor=%22middle%22>image indisponible</text></svg>'">
+        ${overlay}
+      </div>
+      <div class="card-badges">${badges}</div>
+      <div class="card-body">
+        <div class="card-title">${escapeHtml(photo.title)}</div>
+        <div class="card-meta">
+          <span>${timeAgo(photo.date)}</span>
+          ${(photo.tags || []).slice(0, 2).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function shouldCensorPhoto(photo) {
+  const s = state.settings;
+  if (photo.nsfw && s.censorNsfw) return true;
+  if (photo.gore && s.censorGore) return true;
+  if (photo.other && s.censorOther) return true;
+  if (photo.aiFlagged && s.autoIA) return true;
+  return false;
+}
+
+// ---- RÉVÉLER UNE CARTE ----
+function revealCard(overlayEl) {
+  overlayEl.classList.remove('visible');
+  const img = overlayEl.parentElement.querySelector('img');
+  if (img) img.classList.remove('censored');
+}
+
+// ---- MODAL ----
+function openModal(id) {
+  const photo = state.photos.find(p => p.id === id);
+  if (!photo) return;
+  const modal = document.getElementById('modal');
+  const img = document.getElementById('modalImg');
+  img.src = photo.dataUrl;
+  img.alt = photo.title;
+  img.className = shouldCensorPhoto(photo) ? 'censored' : '';
+  modal.classList.add('open');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal') && !e.target.classList.contains('modal-close')) return;
+  document.getElementById('modal').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ---- UPLOAD ----
+function initUploadZone() {
+  const zone = document.getElementById('uploadZone');
+  const input = document.getElementById('fileInput');
+
+  zone.addEventListener('click', () => input.click());
+
+  zone.addEventListener('dragover', e => {
+    e.preventDefault();
+    zone.classList.add('dragover');
+  });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  input.addEventListener('change', () => {
+    if (input.files[0]) handleFile(input.files[0]);
+    input.value = '';
+  });
+}
+
+function handleFile(file) {
+  if (!file.type.startsWith('image/')) {
+    showToast('Format non supporté. Utilisez une image.', 'error');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Image trop lourde (max 10 Mo).', 'error');
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    state.pendingUpload = {
+      file,
+      dataUrl: e.target.result,
+      title: file.name.replace(/\.[^.]+$/, ''),
+      nsfw: false,
+      gore: false,
+      other: false,
+    };
+    showUploadPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function showUploadPreview() {
+  const p = state.pendingUpload;
+  if (!p) return;
+  document.getElementById('previewImg').src = p.dataUrl;
+  document.getElementById('previewName').textContent = p.file.name;
+  document.getElementById('uploadTitle').value = p.title;
+  document.getElementById('chkNsfw').checked = false;
+  document.getElementById('chkGore').checked = false;
+  document.getElementById('chkOther').checked = false;
+  document.getElementById('pillNsfw').className = 'check-pill';
+  document.getElementById('pillGore').className = 'check-pill';
+  document.getElementById('pillOther').className = 'check-pill';
+  document.getElementById('uploadPreview').classList.add('visible');
+
+  // lancer l'analyse IA
+  runAIAnalysisOnPending();
+}
+
+function togglePill(labelEl, type) {
+  const cb = labelEl.querySelector('input');
+  cb.checked = !cb.checked;
+  labelEl.classList.toggle('checked-' + type, cb.checked);
+}
+
+function cancelUpload() {
+  state.pendingUpload = null;
+  document.getElementById('uploadPreview').classList.remove('visible');
+  document.getElementById('fileInput').value = '';
+}
+
+async function confirmUpload() {
+  const p = state.pendingUpload;
+  if (!p) return;
+
+  const title = document.getElementById('uploadTitle').value.trim() || 'Sans titre';
+  const nsfw = document.getElementById('chkNsfw').checked;
+  const gore = document.getElementById('chkGore').checked;
+  const other = document.getElementById('chkOther').checked;
+
+  // si IA activée et modèle chargé, on vérifie si l'image est dangereuse
+  let aiFlagged = false;
+  if (state.settings.autoIA && state.modelReady) {
+    document.getElementById('uploadScanIndicator').classList.add('visible');
+    try {
+      const result = await classifyImageDataUrl(p.dataUrl);
+      // si l'IA détecte quelque chose de dangereux ET que l'utilisateur n'a rien coché
+      if (result.isDangerous && !nsfw && !gore && !other) {
+        aiFlagged = true;
+        showToast('⚠ IA : cette image semble contenir du contenu sensible non déclaré. Elle sera floutée.', 'warn', 5000);
+      }
+    } catch (e) {
+      console.warn('Erreur analyse IA upload', e);
+    }
+    document.getElementById('uploadScanIndicator').classList.remove('visible');
+  }
+
+  const newPhoto = {
+    id: 'up-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+    title,
+    dataUrl: p.dataUrl,
+    tags: [],
+    nsfw, gore, other,
+    aiFlagged,
+    date: Date.now(),
+  };
+
+  state.photos.unshift(newPhoto);
+  persistPhotos();
+  cancelUpload();
+  switchTab('browse');
+  renderGallery();
+  showToast('Photo publiée !', 'success');
+}
+
+// ---- ANALYSE IA (NSFWJS) ----
+async function initModel() {
+  if (state.modelLoading || state.modelReady) return;
+  state.modelLoading = true;
+  document.getElementById('scanIndicator').classList.add('visible');
+  document.getElementById('scanText').textContent = 'Chargement du modèle IA…';
+
+  try {
+    state.nsfwModel = await nsfwjs.load();
+    state.modelReady = true;
+    document.getElementById('scanText').textContent = 'IA prête';
+    setTimeout(() => document.getElementById('scanIndicator').classList.remove('visible'), 2000);
+    // scanner les photos existantes
+    scanExistingPhotos();
+  } catch (e) {
+    console.warn('Impossible de charger NSFWJS', e);
+    document.getElementById('scanText').textContent = 'IA indisponible';
+    setTimeout(() => document.getElementById('scanIndicator').classList.remove('visible'), 3000);
+  } finally {
+    state.modelLoading = false;
+  }
+}
+
+async function classifyImageDataUrl(dataUrl) {
+  if (!state.nsfwModel) throw new Error('Modèle non chargé');
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = async () => {
+      try {
+        const predictions = await state.nsfwModel.classify(img);
+        // prédictions : [{className, probability}, ...]
+        const get = (name) => predictions.find(p => p.className === name)?.probability || 0;
+        const porn = get('Porn');
+        const hentai = get('Hentai');
+        const sexy = get('Sexy');
+        const neutral = get('Neutral');
+        const drawing = get('Drawing');
+
+        // seuils
+        const isNsfw = porn > 0.45 || hentai > 0.5 || sexy > 0.7;
+        // Pour gore, NSFWJS ne détecte pas le gore, on ne peut pas le savoir ici.
+        // On considère "dangereux" si NSFW élevé.
+        const isDangerous = isNsfw;
+
+        resolve({ isNsfw, isDangerous, predictions });
+      } catch (e) { reject(e); }
+    };
+    img.onerror = reject;
+    img.src = dataUrl;
+  });
+}
+
+async function runAIAnalysisOnPending() {
+  if (!state.settings.autoIA) return;
+  if (!state.modelReady) {
+    // essayer de charger le modèle si pas encore fait
+    initModel();
+    return;
+  }
+  const p = state.pendingUpload;
+  if (!p) return;
+
+  document.getElementById('uploadScanIndicator').classList.add('visible');
+  try {
+    const result = await classifyImageDataUrl(p.dataUrl);
+    if (result.isNsfw) {
+      // auto-cocher NSFW et prévenir
+      const cb = document.getElementById('chkNsfw');
+      if (!cb.checked) {
+        cb.checked = true;
+        document.getElementById('pillNsfw').classList.add('checked-nsfw');
+        showToast('⚠ IA : contenu adulte détecté. La case NSFW a été cochée automatiquement.', 'warn', 5000);
+      }
+    }
+  } catch (e) {
+    console.warn('Erreur analyse IA', e);
+  } finally {
+    document.getElementById('uploadScanIndicator').classList.remove('visible');
+  }
+}
+
+async function scanExistingPhotos() {
+  if (!state.settings.autoIA || !state.modelReady) return;
+  // scanner uniquement les photos sans flags et sans aiFlagged
+  const toScan = state.photos.filter(p => !p.nsfw && !p.gore && !p.other && !p.aiFlagged);
+  if (!toScan.length) return;
+
+  document.getElementById('scanIndicator').classList.add('visible');
+  let flagged = 0;
+  for (const photo of toScan) {
+    try {
+      // Éviter de reclassifier les images distantes (CORS) — on essaie quand même
+      const result = await classifyImageDataUrl(photo.dataUrl);
+      if (result.isNsfw) {
+        photo.aiFlagged = true;
+        flagged++;
+      }
+    } catch (e) {
+      // probablement CORS, on ignore
+    }
+  }
+  document.getElementById('scanIndicator').classList.remove('visible');
+  if (flagged > 0) {
+    persistPhotos();
+    renderGallery();
+    showToast(`IA : ${flagged} image(s) sensible(s) détectée(s) et floutée(s) automatiquement.`, 'warn', 5000);
+  }
+}
+
+// ---- TOASTS ----
+function showToast(message, type = 'info', duration = 3000) {
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = message;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transition = 'opacity .3s';
+    setTimeout(() => el.remove(), 300);
+  }, duration);
+}
+
+// ---- UTILITAIRES ----
+function escapeHtml(str) {
+  if (!str) return '';
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function timeAgo(ts) {
+  if (!ts) return '';
+  const diff = Date.now() - ts;
+  const sec = Math.floor(diff / 1000);
+  if (sec < 60) return 'à l’instant';
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `il y a ${min} min`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `il y a ${h} h`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `il y a ${d} j`;
+  return new Date(ts).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+</script>
+</body>
+</html>
