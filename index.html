@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0">
-<title>post.it | share anything.</title>
+<title>post.it</title>
 <style>
 :root{--bg:#0a0a0a;--card:#161616;--in:#1c1c1c;--bd:#262626;--bh:#383838;--tx:#ededed;--dim:#a0a0a0;--mut:#666;--ac:#ededed;--inv:#0a0a0a;--dg:#ff4d4d;--wg:#ffb84d;--ok:#4dff88;}
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
@@ -27,6 +27,20 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .tab.on{color:#ededed;border-bottom-color:#ededed;}
 .pane{display:none;}
 .pane.on{display:block;}
+
+/* STORAGE */
+.storage{padding:12px 14px;background:#111;border:1px solid #262626;border-radius:10px;margin-bottom:14px;}
+.storage .lab{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:#a0a0a0;margin-bottom:7px;font-weight:500;gap:8px;}
+.storage .lab b{color:#ededed;font-weight:600;font-variant-numeric:tabular-nums;}
+.storage .bar{height:6px;background:#1c1c1c;border-radius:99px;overflow:hidden;}
+.storage .fill{height:100%;background:linear-gradient(90deg,#4dff88,#4dd0ff);border-radius:99px;transition:width .35s ease,background .3s;width:0;}
+.storage.warn{border-color:rgba(255,184,77,.4);}
+.storage.warn .fill{background:linear-gradient(90deg,#ffb84d,#ff8c00);}
+.storage.warn .lab b{color:#ffb84d;}
+.storage.danger{border-color:rgba(255,77,77,.5);}
+.storage.danger .fill{background:linear-gradient(90deg,#ff4d4d,#ff2d2d);}
+.storage.danger .lab b{color:#ff4d4d;}
+
 .sh{margin-bottom:14px;}
 .sh h2{font-size:16px;font-weight:700;letter-spacing:-.2px;}
 .sh p{font-size:12px;color:#666;margin-top:2px;}
@@ -42,12 +56,29 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .cov .ic{font-size:22px;color:#fff;opacity:.9;}
 .cov .lb{font-size:10px;font-weight:700;letter-spacing:.5px;color:#ccc;text-transform:uppercase;}
 .cov .hx{font-size:9px;color:#888;}
-.bgs{position:absolute;top:6px;left:6px;display:flex;gap:3px;z-index:3;flex-wrap:wrap;}
+.bgs{position:absolute;top:6px;left:6px;display:flex;gap:3px;z-index:3;flex-wrap:wrap;max-width:calc(100% - 44px);}
 .bg{font-size:8px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 6px;border-radius:4px;}
 .bg.n{background:#ff4d4d;color:#fff;}
 .bg.g{background:#ff8c00;color:#fff;}
 .bg.o{background:#888;color:#fff;}
 .bg.i{background:#ffb84d;color:#000;}
+
+/* BOUTON SUPPRIMER */
+.del{
+  position:absolute;top:6px;right:6px;z-index:4;
+  width:28px;height:28px;
+  background:rgba(0,0,0,.65);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:50%;
+  color:#fff;font-size:13px;font-family:inherit;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;padding:0;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:background .15s,border-color .15s,transform .1s;
+}
+.del:hover{background:rgba(255,77,77,.9);border-color:rgba(255,77,77,.9);}
+.del:active{transform:scale(.9);background:rgba(255,77,77,.95);border-color:#ff4d4d;}
+
 .bd{padding:10px 12px;}
 .tt{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:2px;}
 .mt{font-size:11px;color:#666;}
@@ -65,6 +96,8 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .btn.p{background:#ededed;color:#0a0a0a;border-color:#ededed;font-weight:700;}
 .btn.p:active{background:#fff;}
 .btn.full{width:100%;}
+.btn.dng{background:#ff4d4d;color:#fff;border-color:#ff4d4d;font-weight:700;}
+.btn.dng:active{background:#ff2d2d;}
 .pv{display:none;margin-top:16px;background:#161616;border:1px solid #262626;border-radius:12px;padding:16px;}
 .pv.on{display:block;}
 .pv img{width:100%;max-height:260px;object-fit:contain;background:#0d0d0d;border-radius:8px;border:1px solid #262626;margin-bottom:12px;}
@@ -106,11 +139,21 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 .mand .dot{width:6px;height:6px;border-radius:50%;background:#4dff88;box-shadow:0 0 6px #4dff88;}
 .info{font-size:11px;color:#666;margin-top:10px;line-height:1.5;padding:12px;background:#111;border:1px solid #262626;border-radius:8px;}
 .info b{color:#a0a0a0;font-weight:600;}
+
+/* MODALS */
 .modal{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;padding:16px;}
 .modal.on{display:flex;}
 .modal img{max-width:100%;max-height:80vh;border-radius:12px;display:block;object-fit:contain;}
 .modal img.cens{filter:blur(22px) brightness(.5);}
 .mclose{position:absolute;top:16px;right:16px;width:40px;height:40px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:50%;color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;}
+
+/* CONFIRM */
+.cfbox{background:#161616;border:1px solid #262626;border-radius:14px;padding:22px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.7);}
+.cfbox h3{font-size:16px;font-weight:700;margin-bottom:8px;color:#ededed;}
+.cfbox p{font-size:13px;color:#a0a0a0;line-height:1.55;margin-bottom:18px;word-break:break-word;}
+.cfbtns{display:flex;gap:8px;justify-content:flex-end;}
+.cfbtns .btn{height:38px;padding:0 16px;font-size:13px;}
+
 .toasts{position:fixed;left:12px;right:12px;bottom:12px;z-index:2000;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;}
 @media(min-width:600px){.toasts{left:auto;right:20px;bottom:20px;align-items:flex-end;}}
 .toast{background:#161616;border:1px solid #262626;border-radius:8px;padding:12px 16px;font-size:13px;max-width:min(92vw,380px);pointer-events:auto;box-shadow:0 6px 24px rgba(0,0,0,.6);}
@@ -143,6 +186,10 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   </div>
 
   <section class="pane on" id="pane-browse">
+    <div class="storage" id="storage">
+      <div class="lab"><span>Stockage utilise</span><b id="storageTxt">0 o / 100 Mo</b></div>
+      <div class="bar"><div class="fill" id="storageFill"></div></div>
+    </div>
     <div class="sh">
       <h2 id="ttl">Toutes les photos</h2>
       <p id="sub">-</p>
@@ -164,7 +211,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     <label class="uz" id="drop" for="file">
       <div class="ui">&#11014;</div>
       <div class="ut">Ajouter une image</div>
-      <div class="ud">JPG, PNG, WebP, GIF - max 10 Mo</div>
+      <div class="ud">JPG, PNG, WebP, GIF - max 10 Mo par image</div>
       <span class="btn p full">Choisir un fichier</span>
       <input id="file" type="file" accept="image/*" style="display:none">
     </label>
@@ -235,7 +282,8 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     </div>
 
     <div class="info">
-      <b>Note :</b> vos parametres de censure sont enregistres dans des cookies (valables 1 an). Les photos uploadees sont stockees localement dans votre navigateur (IndexedDB) et restent disponibles a chaque visite sur cet appareil.
+      <b>Stockage :</b> 100 Mo maximum au total. Supprimez des photos depuis l'onglet Explorer pour liberer de la place.<br>
+      <b>Donnees :</b> vos parametres de censure sont dans des cookies (1 an). Les photos sont stockees dans IndexedDB sur cet appareil.
     </div>
   </section>
 </main>
@@ -243,6 +291,17 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 <div class="modal" id="modal">
   <button class="mclose" id="mclose" type="button">X</button>
   <img id="mimg" alt="">
+</div>
+
+<div class="modal" id="confirm">
+  <div class="cfbox">
+    <h3>Supprimer cette photo ?</h3>
+    <p id="cfMsg">Cette action est definitive.</p>
+    <div class="cfbtns">
+      <button class="btn" id="cfNo" type="button">Annuler</button>
+      <button class="btn dng" id="cfYes" type="button">Supprimer</button>
+    </div>
+  </div>
 </div>
 
 <div class="toasts" id="toasts"></div>
@@ -254,10 +313,17 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   function $(id){ return document.getElementById(id); }
 
   // ============================================================
-  // COOKIES (parametres utilisateur)
+  // CONSTANTES
   // ============================================================
   var COOKIE_DAYS = 365;
+  var STORAGE_LIMIT = 100 * 1024 * 1024; // 100 Mo
+  var MAX_FILE_SIZE = 10 * 1024 * 1024;  // 10 Mo par image
+  var WARN_THRESHOLD = 0.75;
+  var DANGER_THRESHOLD = 0.90;
 
+  // ============================================================
+  // COOKIES
+  // ============================================================
   function setCookie(name, value){
     try {
       var d = new Date();
@@ -266,7 +332,6 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
     } catch(e){}
   }
-
   function getCookie(name){
     try {
       var parts = document.cookie ? document.cookie.split(';') : [];
@@ -280,14 +345,8 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     return null;
   }
 
-  function delCookie(name){
-    try {
-      document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;SameSite=Lax';
-    } catch(e){}
-  }
-
   // ============================================================
-  // INDEXEDDB (photos persistantes)
+  // INDEXEDDB
   // ============================================================
   var DB_NAME = 'postit_db';
   var DB_VERSION = 1;
@@ -295,10 +354,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
 
   function idbOpen(){
     return new Promise(function(resolve, reject){
-      if (!window.indexedDB){
-        reject(new Error('IndexedDB non supporte'));
-        return;
-      }
+      if (!window.indexedDB){ reject(new Error('IndexedDB non supporte')); return; }
       var req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = function(e){
         var db = e.target.result;
@@ -310,37 +366,31 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       req.onerror = function(){ reject(req.error); };
     });
   }
-
   function idbGetAll(){
     return idbOpen().then(function(db){
       return new Promise(function(resolve, reject){
         var tx = db.transaction(STORE, 'readonly');
-        var store = tx.objectStore(STORE);
-        var req = store.getAll();
+        var req = tx.objectStore(STORE).getAll();
         req.onsuccess = function(){ resolve(req.result || []); };
         req.onerror = function(){ reject(req.error); };
       });
     });
   }
-
   function idbPut(photo){
     return idbOpen().then(function(db){
       return new Promise(function(resolve, reject){
         var tx = db.transaction(STORE, 'readwrite');
-        var store = tx.objectStore(STORE);
-        var req = store.put(photo);
+        var req = tx.objectStore(STORE).put(photo);
         req.onsuccess = function(){ resolve(); };
         req.onerror = function(){ reject(req.error); };
       });
     });
   }
-
   function idbDelete(id){
     return idbOpen().then(function(db){
       return new Promise(function(resolve, reject){
         var tx = db.transaction(STORE, 'readwrite');
-        var store = tx.objectStore(STORE);
-        var req = store.delete(id);
+        var req = tx.objectStore(STORE).delete(id);
         req.onsuccess = function(){ resolve(); };
         req.onerror = function(){ reject(req.error); };
       });
@@ -354,15 +404,14 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     photos: [],
     tab: 'browse',
     q: '',
-    // Censure : valeurs lues depuis les cookies
-    // IA toujours active (obligatoire)
     cens: { nsfw:false, gore:false, other:false, ia:true },
     pending: null,
     model: null,
     modelLoading: false,
     modelReady: false,
     iaFailed: false,
-    ready: false
+    currentModalId: null,
+    pendingDeleteId: null
   };
 
   // ============================================================
@@ -384,6 +433,12 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     catch(e){ return ''; }
   }
 
+  function fmtBytes(b){
+    if (b < 1024) return b + ' o';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' Ko';
+    return (b / (1024 * 1024)).toFixed(2) + ' Mo';
+  }
+
   function toast(msg, type){
     var wrap = $('toasts');
     if (!wrap) return;
@@ -396,7 +451,39 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       el.style.opacity = '0';
       el.style.transform = 'translateY(10px)';
       setTimeout(function(){ if (el.parentNode) el.parentNode.removeChild(el); }, 320);
-    }, type === 'w' ? 5000 : 2800);
+    }, type === 'w' || type === 'e' ? 5000 : 2800);
+  }
+
+  // ============================================================
+  // STOCKAGE : calcul de l'usage
+  // ============================================================
+  function usage(){
+    var total = 0;
+    for (var i = 0; i < S.photos.length; i++){
+      var u = S.photos[i].dataUrl || '';
+      total += u.length;
+    }
+    return total;
+  }
+
+  function updateStorageUI(){
+    var used = usage();
+    var pct = Math.min(100, (used / STORAGE_LIMIT) * 100);
+    var box = $('storage');
+    var txt = $('storageTxt');
+    var fill = $('storageFill');
+    if (!box || !txt || !fill) return;
+
+    txt.textContent = fmtBytes(used) + ' / 100 Mo';
+    fill.style.width = pct + '%';
+
+    box.classList.remove('warn', 'danger');
+    if (used >= STORAGE_LIMIT * DANGER_THRESHOLD) box.classList.add('danger');
+    else if (used >= STORAGE_LIMIT * WARN_THRESHOLD) box.classList.add('warn');
+  }
+
+  function hasSpaceFor(estimatedBytes){
+    return usage() + estimatedBytes <= STORAGE_LIMIT;
   }
 
   // ============================================================
@@ -407,7 +494,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     if (p.nsfw && c.nsfw) return true;
     if (p.gore && c.gore) return true;
     if (p.other && c.other) return true;
-    if (p.aiFlag) return true; // IA toujours appliquee
+    if (p.aiFlag) return true;
     return false;
   }
 
@@ -425,7 +512,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       if (pane) pane.classList.toggle('on', t === tab);
       if (tabEl) tabEl.classList.toggle('on', t === tab);
     }
-    if (tab === 'browse') render();
+    if (tab === 'browse'){ render(); updateStorageUI(); }
   }
 
   // ============================================================
@@ -485,6 +572,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       if (p.aiFlag) badges += '<span class="bg i">IA</span>';
 
       html += '<div class="card" data-id="' + esc(p.id) + '">'
+        + '<button class="del" type="button" data-del="' + esc(p.id) + '" aria-label="Supprimer">&#10005;</button>'
         + '<div class="ibox">'
         +   '<img src="' + p.dataUrl + '" alt="' + esc(p.title) + '"' + (c ? ' class="cens"' : '') + '>'
         +   (c ? '<div class="cov on"><div class="ic">&#128274;</div><div class="lb">Masque</div><div class="hx">Toucher pour voir</div></div>' : '')
@@ -498,28 +586,42 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     }
     grid.innerHTML = html;
 
+    // Evenements des cartes
     var cards = grid.querySelectorAll('.card');
     for (var n = 0; n < cards.length; n++){
       (function(card){
         var id = card.getAttribute('data-id');
         var box = card.querySelector('.ibox');
-        if (!box) return;
-        box.addEventListener('click', function(){
-          var cov = box.querySelector('.cov.on');
-          if (cov){
-            cov.classList.remove('on');
-            var img = box.querySelector('img');
-            if (img) img.classList.remove('cens');
-            return;
-          }
-          openModal(id);
-        });
+        if (box){
+          box.addEventListener('click', function(){
+            var cov = box.querySelector('.cov.on');
+            if (cov){
+              cov.classList.remove('on');
+              var img = box.querySelector('img');
+              if (img) img.classList.remove('cens');
+              return;
+            }
+            openModal(id);
+          });
+        }
       })(cards[n]);
+    }
+
+    // Evenements des boutons supprimer
+    var dels = grid.querySelectorAll('.del');
+    for (var d = 0; d < dels.length; d++){
+      (function(btn){
+        btn.addEventListener('click', function(e){
+          e.stopPropagation();
+          e.preventDefault();
+          askDelete(btn.getAttribute('data-del'));
+        });
+      })(dels[d]);
     }
   }
 
   // ============================================================
-  // MODAL
+  // MODAL LIGHTBOX
   // ============================================================
   function openModal(id){
     var p = null;
@@ -527,6 +629,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       if (S.photos[i].id === id){ p = S.photos[i]; break; }
     }
     if (!p) return;
+    S.currentModalId = id;
     var m = $('modal');
     var img = $('mimg');
     img.src = p.dataUrl;
@@ -535,8 +638,54 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     m.classList.add('on');
   }
   function closeModal(){
+    S.currentModalId = null;
     var m = $('modal');
     if (m) m.classList.remove('on');
+  }
+
+  // ============================================================
+  // CONFIRM SUPPRESSION
+  // ============================================================
+  function askDelete(id){
+    var p = null;
+    for (var i = 0; i < S.photos.length; i++){
+      if (S.photos[i].id === id){ p = S.photos[i]; break; }
+    }
+    if (!p) return;
+    S.pendingDeleteId = id;
+    var size = (p.dataUrl || '').length;
+    $('cfMsg').textContent = '« ' + p.title + ' » sera supprimee definitivement. '
+      + fmtBytes(size) + ' seront liberes.';
+    $('confirm').classList.add('on');
+  }
+
+  function closeConfirm(){
+    S.pendingDeleteId = null;
+    var c = $('confirm');
+    if (c) c.classList.remove('on');
+  }
+
+  function doDelete(){
+    var id = S.pendingDeleteId;
+    closeConfirm();
+    if (!id) return;
+
+    idbDelete(id).then(function(){
+      var before = usage();
+      var removed = 0;
+      S.photos = S.photos.filter(function(x){
+        if (x.id === id){ removed += (x.dataUrl || '').length; return false; }
+        return true;
+      });
+      // Si la modal lightbox affichait cette photo, fermer
+      if (S.currentModalId === id) closeModal();
+      render();
+      updateStorageUI();
+      toast('Photo supprimee. ' + fmtBytes(removed) + ' liberes.', 's');
+    }).catch(function(err){
+      console.warn('Erreur suppression:', err);
+      toast('Impossible de supprimer la photo.', 'e');
+    });
   }
 
   // ============================================================
@@ -547,15 +696,36 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       toast('Format non supporte', 'e');
       return;
     }
-    if (f.size > 10 * 1024 * 1024){
+    if (f.size > MAX_FILE_SIZE){
       toast('Image trop lourde (max 10 Mo)', 'e');
       return;
     }
+
+    // Pre-verification : estimation de la taille stockee
+    var estimatedStored = Math.ceil(f.size * 1.37);
+    var remaining = STORAGE_LIMIT - usage();
+    if (estimatedStored > remaining){
+      toast('Limite d\'upload globale atteinte (100 Mo). '
+        + 'Il reste ' + fmtBytes(Math.max(0, remaining)) + '. '
+        + 'Supprimez des photos pour liberer de l\'espace.', 'e');
+      return;
+    }
+
     var r = new FileReader();
     r.onload = function(ev){
+      var dataUrl = ev.target.result;
+
+      // Verification exacte apres lecture
+      if (!hasSpaceFor(dataUrl.length)){
+        toast('Limite d\'upload globale atteinte (100 Mo). '
+          + 'Cette image ne peut pas etre ajoutee. '
+          + 'Supprimez des photos pour liberer de l\'espace.', 'e');
+        return;
+      }
+
       S.pending = {
         fileName: f.name,
-        dataUrl: ev.target.result,
+        dataUrl: dataUrl,
         title: f.name.replace(/\.[^.]+$/, ''),
         nsfw: false,
         gore: false,
@@ -572,7 +742,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     var p = S.pending;
     if (!p) return;
     $('pimg').src = p.dataUrl;
-    $('pname').textContent = p.fileName;
+    $('pname').textContent = p.fileName + ' (' + fmtBytes(p.dataUrl.length) + ')';
     $('ptitle').value = p.title;
     var pills = document.querySelectorAll('.pil');
     for (var i = 0; i < pills.length; i++) pills[i].classList.remove('on');
@@ -589,6 +759,13 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   function publish(){
     var p = S.pending;
     if (!p) return;
+
+    // Derniere verif de securite
+    if (!hasSpaceFor(p.dataUrl.length)){
+      toast('Limite de 100 Mo depassee. Supprimez des photos.', 'e');
+      return;
+    }
+
     var tEl = $('ptitle');
     var title = (tEl && tEl.value.trim()) || 'Sans titre';
 
@@ -609,16 +786,18 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
     idbPut(photo).then(function(){
       cancelPreview();
       go('browse');
-      toast('Photo publiee et enregistree !', 's');
+      updateStorageUI();
+      toast('Photo publiee. ' + fmtBytes(photo.dataUrl.length) + ' utilises.', 's');
     }).catch(function(){
       cancelPreview();
       go('browse');
+      updateStorageUI();
       toast('Photo publiee (non persistee)', 'w');
     });
   }
 
   // ============================================================
-  // CHARGEMENT DES PHOTOS (IndexedDB)
+  // CHARGEMENT DES PHOTOS
   // ============================================================
   function loadPhotos(){
     return idbGetAll().then(function(arr){
@@ -656,10 +835,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
         if (typeof window.nsfwjs === 'undefined') throw new Error('manquant');
         return window.nsfwjs.load();
       })
-      .then(function(model){
-        S.model = model;
-        S.modelReady = true;
-      })
+      .then(function(model){ S.model = model; S.modelReady = true; })
       .catch(function(err){
         console.warn('IA indisponible :', err);
         S.iaFailed = true;
@@ -715,20 +891,20 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
   }
 
   // ============================================================
-  // INITIALISATION
+  // INIT
   // ============================================================
   function init(){
-    // 1) Lire les cookies de censure
+    // Cookies de censure
     S.cens.nsfw = getCookie('postit_cens_nsfw') === '1';
     S.cens.gore = getCookie('postit_cens_gore') === '1';
     S.cens.other = getCookie('postit_cens_other') === '1';
-    S.cens.ia = true; // toujours actif
+    S.cens.ia = true;
 
     if ($('cNsfw')) $('cNsfw').checked = S.cens.nsfw;
     if ($('cGore')) $('cGore').checked = S.cens.gore;
     if ($('cOther')) $('cOther').checked = S.cens.other;
 
-    // 2) Brancher les onglets
+    // Onglets
     var tabs = ['browse','upload','settings'];
     for (var i = 0; i < tabs.length; i++){
       (function(t){
@@ -737,13 +913,13 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       })(tabs[i]);
     }
 
-    // 3) Logo + gear
+    // Logo + gear
     var logo = $('logoBtn');
     if (logo) logo.addEventListener('click', function(e){ e.preventDefault(); go('browse'); });
     var gear = $('gearBtn');
     if (gear) gear.addEventListener('click', function(){ go('settings'); });
 
-    // 4) Recherche
+    // Recherche
     var q = $('q');
     var qt;
     if (q) q.addEventListener('input', function(){
@@ -755,20 +931,20 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       }, 180);
     });
 
-    // 5) Input file
+    // Fichier
     var file = $('file');
     if (file) file.addEventListener('change', function(){
       if (file.files && file.files[0]) handleFile(file.files[0]);
       file.value = '';
     });
 
-    // 6) Publish / cancel
+    // Boutons upload
     var pub = $('pubBtn');
     if (pub) pub.addEventListener('click', publish);
     var cxl = $('cxlBtn');
     if (cxl) cxl.addEventListener('click', cancelPreview);
 
-    // 7) Pills classification
+    // Pills de classification
     var pills = document.querySelectorAll('.pil');
     for (var j = 0; j < pills.length; j++){
       (function(el){
@@ -781,7 +957,7 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       })(pills[j]);
     }
 
-    // 8) Parametres (cookies)
+    // Parametres
     var sett = [
       { id:'cNsfw', key:'nsfw', cookie:'postit_cens_nsfw' },
       { id:'cGore', key:'gore', cookie:'postit_cens_gore' },
@@ -799,29 +975,43 @@ main{max-width:1200px;margin:0 auto;padding:14px 14px 100px;}
       })(sett[s]);
     }
 
-    // 9) Modal
+    // Modal lightbox
     var mc = $('mclose');
     if (mc) mc.addEventListener('click', closeModal);
     var modal = $('modal');
     if (modal) modal.addEventListener('click', function(e){
       if (e.target === modal) closeModal();
     });
-    document.addEventListener('keydown', function(e){
-      if (e.key === 'Escape') closeModal();
+
+    // Modal confirm
+    var cfNo = $('cfNo');
+    if (cfNo) cfNo.addEventListener('click', closeConfirm);
+    var cfYes = $('cfYes');
+    if (cfYes) cfYes.addEventListener('click', doDelete);
+    var confirmEl = $('confirm');
+    if (confirmEl) confirmEl.addEventListener('click', function(e){
+      if (e.target === confirmEl) closeConfirm();
     });
 
-    // 10) Charger les photos depuis IndexedDB puis afficher
+    // Echap
+    document.addEventListener('keydown', function(e){
+      if (e.key === 'Escape'){
+        if ($('confirm').classList.contains('on')) closeConfirm();
+        else closeModal();
+      }
+    });
+
+    // Chargement des photos
     loadPhotos().then(function(){
-      S.ready = true;
       render();
-      // Onglet memorise
+      updateStorageUI();
       var lastTab = getCookie('postit_tab');
       if (lastTab === 'upload' || lastTab === 'settings' || lastTab === 'browse'){
         go(lastTab);
       }
     });
 
-    // 11) Lancer l'IA en arriere-plan (obligatoire)
+    // IA en arriere-plan
     setTimeout(function(){ try { loadModel(); } catch(e){} }, 2000);
   }
 
