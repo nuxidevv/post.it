@@ -2,979 +2,996 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0a0a">
 <title>post.it — partage de photos</title>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/nsfwjs@4.1.0/dist/nsfwjs.min.js"></script>
 <style>
 :root{
-  --bg:#0a0a0a;--bg-elev:#111;--bg-card:#161616;--bg-input:#1c1c1c;
-  --border:#262626;--border-hover:#333;--text:#ededed;--text-dim:#a0a0a0;
-  --text-mute:#666;--accent:#ededed;--accent-inv:#0a0a0a;
+  --bg:#0a0a0a;--elev:#111;--card:#161616;--input:#1c1c1c;
+  --border:#262626;--bh:#383838;--text:#ededed;--dim:#a0a0a0;--mute:#666;
+  --accent:#ededed;--inv:#0a0a0a;
   --danger:#ff4d4d;--warn:#ffb84d;--ok:#4dff88;
-  --radius:10px;--radius-sm:6px;
-  --font:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-  --shadow:0 4px 24px rgba(0,0,0,.5);
-  --blur-amount:22px;
+  --r:12px;--rs:8px;
+  --blur:22px;
 }
-*{margin:0;padding:0;box-sizing:border-box;}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{overflow-x:hidden;}
 body{
-  background:var(--bg);color:var(--text);font-family:var(--font);
-  font-size:14px;line-height:1.5;min-height:100vh;
-  display:flex;flex-direction:column;-webkit-font-smoothing:antialiased;
+  background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  font-size:15px;line-height:1.5;min-height:100vh;
+  padding-bottom:env(safe-area-inset-bottom);
 }
-::-webkit-scrollbar{width:8px;height:8px;}
-::-webkit-scrollbar-track{background:var(--bg);}
-::-webkit-scrollbar-thumb{background:#2a2a2a;border-radius:4px;}
-::-webkit-scrollbar-thumb:hover{background:#3a3a3a;}
+::-webkit-scrollbar{width:0;height:0;}
 
+/* HEADER */
 header{
-  position:sticky;top:0;z-index:100;
-  background:rgba(10,10,10,.85);backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--border);padding:0 24px;
+  position:sticky;top:0;z-index:50;
+  background:rgba(10,10,10,.92);backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--border);
+  padding:env(safe-area-inset-top) 16px 0;
 }
-.header-inner{
+.hd{
   max-width:1200px;margin:0 auto;
-  display:flex;align-items:center;gap:20px;height:56px;
+  display:flex;align-items:center;gap:12px;
+  height:56px;
 }
 .logo{
-  font-size:18px;font-weight:700;letter-spacing:-.4px;
+  font-size:17px;font-weight:800;letter-spacing:-.5px;
   color:var(--text);text-decoration:none;
-  display:flex;align-items:center;gap:8px;white-space:nowrap;
+  display:flex;align-items:center;gap:8px;white-space:nowrap;flex-shrink:0;
 }
-.logo .dot{color:var(--text-mute);}
-.logo-badge{
-  font-size:10px;font-weight:500;background:var(--bg-card);
-  border:1px solid var(--border);color:var(--text-mute);
-  padding:2px 7px;border-radius:99px;letter-spacing:.3px;
+.logo b{font-weight:800;}
+.logo .dot{color:var(--mute);font-weight:800;}
+.tag{
+  font-size:9px;font-weight:600;background:var(--card);
+  border:1px solid var(--border);color:var(--mute);
+  padding:2px 6px;border-radius:99px;letter-spacing:.4px;
+  text-transform:uppercase;
 }
-.search-wrap{flex:1;max-width:420px;position:relative;}
-.search-wrap svg{
-  position:absolute;left:12px;top:50%;transform:translateY(-50%);
-  width:16px;height:16px;color:var(--text-mute);pointer-events:none;
+.search{flex:1;position:relative;min-width:0;}
+.search svg{
+  position:absolute;left:11px;top:50%;transform:translateY(-50%);
+  width:15px;height:15px;color:var(--mute);pointer-events:none;
 }
-.search-input{
-  width:100%;height:36px;background:var(--bg-input);
-  border:1px solid var(--border);border-radius:var(--radius-sm);
-  color:var(--text);padding:0 12px 0 36px;font-size:13px;
-  font-family:var(--font);outline:none;transition:border-color .15s;
+.search input{
+  width:100%;height:38px;background:var(--input);
+  border:1px solid var(--border);border-radius:var(--rs);
+  color:var(--text);padding:0 12px 0 34px;
+  font-size:15px;font-family:inherit;outline:none;
+  -webkit-appearance:none;
 }
-.search-input::placeholder{color:var(--text-mute);}
-.search-input:focus{border-color:var(--border-hover);}
-.header-actions{display:flex;align-items:center;gap:8px;margin-left:auto;}
+.search input::placeholder{color:var(--mute);}
+.search input:focus{border-color:var(--bh);}
+.icobtn{
+  width:38px;height:38px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:transparent;border:1px solid transparent;
+  border-radius:var(--rs);color:var(--dim);
+  cursor:pointer;transition:all .15s;
+}
+.icobtn:active{background:var(--card);}
+.icobtn svg{width:18px;height:18px;}
 
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  height:36px;padding:0 14px;border-radius:var(--radius-sm);
-  border:1px solid var(--border);background:var(--bg-card);
-  color:var(--text);font-size:13px;font-weight:500;
-  font-family:var(--font);cursor:pointer;transition:all .15s;
-  white-space:nowrap;user-select:none;
+/* MAIN */
+main{max-width:1200px;margin:0 auto;padding:16px 16px 100px;}
+
+/* TABS */
+.tabs{
+  display:flex;gap:4px;margin-bottom:16px;
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;scrollbar-width:none;
 }
-.btn:hover{background:#1e1e1e;border-color:var(--border-hover);}
-.btn:active{transform:scale(.97);}
-.btn-primary{background:var(--accent);color:var(--accent-inv);border-color:var(--accent);font-weight:600;}
-.btn-primary:hover{background:#fff;border-color:#fff;}
-.btn-ghost{background:transparent;border-color:transparent;color:var(--text-dim);}
-.btn-ghost:hover{background:var(--bg-card);color:var(--text);}
-.btn-icon{width:36px;padding:0;}
-
-main{flex:1;max-width:1200px;margin:0 auto;padding:28px 24px 80px;width:100%;}
-
-.tabs{display:flex;gap:4px;margin-bottom:24px;border-bottom:1px solid var(--border);}
+.tabs::-webkit-scrollbar{display:none;}
 .tab{
-  padding:10px 16px;font-size:13px;font-weight:500;color:var(--text-mute);
-  cursor:pointer;border:none;background:none;font-family:var(--font);
-  border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;
+  padding:11px 14px;font-size:14px;font-weight:500;
+  color:var(--mute);cursor:pointer;background:none;border:none;
+  font-family:inherit;white-space:nowrap;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:color .15s;
 }
-.tab:hover{color:var(--text-dim);}
 .tab.active{color:var(--text);border-bottom-color:var(--accent);}
 
-.section-head{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:16px;gap:12px;flex-wrap:wrap;
-}
-.section-title{font-size:16px;font-weight:600;letter-spacing:-.2px;}
-.section-sub{font-size:12px;color:var(--text-mute);margin-top:2px;}
+/* SECTION HEAD */
+.sh{margin-bottom:14px;}
+.sh h2{font-size:16px;font-weight:700;letter-spacing:-.2px;}
+.sh p{font-size:12px;color:var(--mute);margin-top:2px;}
 
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;}
-@media(max-width:600px){.gallery{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;}}
+/* GALLERY */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr);gap:12px;}}
+@media(min-width:960px){.grid{grid-template-columns:repeat(4,1fr);}}
 
 .card{
-  background:var(--bg-card);border:1px solid var(--border);
-  border-radius:var(--radius);overflow:hidden;position:relative;
-  transition:border-color .15s,transform .15s;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;position:relative;
 }
-.card:hover{border-color:var(--border-hover);transform:translateY(-2px);}
-.card-img-wrap{
-  position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#0d0d0d;
-  cursor:zoom-in;
+.imgbox{
+  position:relative;width:100%;aspect-ratio:1;background:#0d0d0d;
+  overflow:hidden;cursor:zoom-in;
 }
-.card-img-wrap img{
+.imgbox img{
   width:100%;height:100%;object-fit:cover;display:block;
   transition:filter .3s;
 }
-.card-img-wrap img.censored{
-  filter:blur(var(--blur-amount)) brightness(.55);
-  transform:scale(1.1);
-}
-.censor-overlay{
+.imgbox img.cens{filter:blur(var(--blur)) brightness(.55);transform:scale(1.1);}
+
+.cover{
   position:absolute;inset:0;display:none;
-  align-items:center;justify-content:center;flex-direction:column;gap:6px;
-  background:rgba(0,0,0,.5);z-index:2;cursor:pointer;
+  flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  background:rgba(0,0,0,.45);cursor:pointer;z-index:2;
+  padding:8px;text-align:center;
 }
-.censor-overlay.visible{display:flex;}
-.censor-overlay .icon{font-size:26px;opacity:.9;}
-.censor-overlay .label{
-  font-size:11px;font-weight:700;letter-spacing:.5px;
-  text-transform:uppercase;color:var(--text-dim);
-}
-.censor-overlay .hint{font-size:10px;color:var(--text-mute);}
+.cover.on{display:flex;}
+.cover .ico{font-size:24px;opacity:.9;}
+.cover .lbl{font-size:10px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--dim);}
+.cover .hint{font-size:9px;color:var(--mute);}
 
-.card-badges{
-  position:absolute;top:8px;left:8px;
-  display:flex;gap:4px;z-index:3;flex-wrap:wrap;
+.badges{
+  position:absolute;top:6px;left:6px;
+  display:flex;gap:3px;z-index:3;flex-wrap:wrap;
 }
-.badge{
-  font-size:9px;font-weight:700;letter-spacing:.6px;
-  text-transform:uppercase;padding:3px 7px;border-radius:4px;
-  backdrop-filter:blur(8px);
+.b{
+  font-size:8px;font-weight:800;letter-spacing:.5px;
+  text-transform:uppercase;padding:3px 6px;border-radius:4px;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
 }
-.badge-nsfw{background:rgba(255,77,77,.9);color:#fff;}
-.badge-gore{background:rgba(255,140,0,.9);color:#fff;}
-.badge-other{background:rgba(160,160,160,.9);color:#fff;}
-.badge-ia{background:rgba(255,184,77,.9);color:#0a0a0a;}
+.b.n{background:rgba(255,77,77,.92);color:#fff;}
+.b.g{background:rgba(255,140,0,.92);color:#fff;}
+.b.o{background:rgba(160,160,160,.92);color:#fff;}
+.b.i{background:rgba(255,184,77,.92);color:#0a0a0a;}
 
-.card-body{padding:12px 14px;}
-.card-title{
-  font-size:13px;font-weight:500;color:var(--text);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:4px;
+.body{padding:10px 12px;}
+.title{
+  font-size:13px;font-weight:500;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:3px;
 }
-.card-meta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-mute);}
-.card-meta .tag{background:var(--bg-input);padding:2px 6px;border-radius:4px;font-size:10px;}
+.meta{font-size:11px;color:var(--mute);}
 
-.empty{text-align:center;padding:64px 20px;color:var(--text-mute);}
-.empty-icon{font-size:40px;margin-bottom:12px;opacity:.4;}
-.empty-title{font-size:15px;font-weight:500;color:var(--text-dim);margin-bottom:6px;}
-.empty-text{font-size:13px;max-width:340px;margin:0 auto;line-height:1.6;}
+/* EMPTY */
+.empty{text-align:center;padding:60px 20px;color:var(--mute);}
+.empty .e-ico{font-size:44px;margin-bottom:12px;opacity:.4;}
+.empty .e-t{font-size:15px;font-weight:600;color:var(--dim);margin-bottom:6px;}
+.empty .e-d{font-size:13px;max-width:320px;margin:0 auto;line-height:1.6;}
 
-.upload-zone{
-  border:1.5px dashed var(--border);border-radius:var(--radius);
-  padding:48px 24px;text-align:center;cursor:pointer;
-  transition:all .2s;background:var(--bg-elev);
+/* UPLOAD */
+.uzone{
+  border:1.5px dashed var(--border);border-radius:var(--r);
+  padding:40px 20px;text-align:center;background:var(--elev);
+  transition:border-color .2s,background .2s;
 }
-.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:#141414;}
-.upload-zone .icon{font-size:36px;margin-bottom:12px;opacity:.5;}
-.upload-zone .title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:6px;}
-.upload-zone .sub{font-size:12px;color:var(--text-mute);margin-bottom:16px;}
+.uzone.drag{border-color:var(--accent);background:#141414;}
+.uzone .uz-ico{font-size:36px;margin-bottom:12px;opacity:.5;}
+.uzone .uz-t{font-size:15px;font-weight:600;margin-bottom:6px;}
+.uzone .uz-d{font-size:12px;color:var(--mute);margin-bottom:18px;}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  height:42px;padding:0 18px;border-radius:var(--rs);
+  border:1px solid var(--border);background:var(--card);color:var(--text);
+  font-size:14px;font-weight:600;font-family:inherit;
+  cursor:pointer;transition:all .15s;
+  -webkit-appearance:none;appearance:none;
+}
+.btn:active{transform:scale(.97);}
+.btn.p{background:var(--accent);color:var(--inv);border-color:var(--accent);font-weight:700;}
+.btn.p:active{background:#fff;}
+.btn.full{width:100%;}
 
-.upload-preview{
-  display:none;margin-top:20px;background:var(--bg-card);
-  border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+/* PREVIEW */
+.preview{display:none;margin-top:16px;background:var(--card);
+  border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.preview.on{display:block;}
+.preview-in{padding:16px;}
+.preview img{
+  width:100%;max-height:280px;object-fit:contain;
+  border-radius:var(--rs);border:1px solid var(--border);
+  margin-bottom:14px;background:#0d0d0d;
 }
-.upload-preview.visible{display:block;}
-.upload-preview-inner{display:flex;gap:20px;padding:20px;flex-wrap:wrap;}
-.upload-preview img{
-  width:180px;height:180px;object-fit:cover;
-  border-radius:var(--radius-sm);border:1px solid var(--border);
+.fname{
+  font-size:12px;color:var(--mute);margin-bottom:12px;
+  word-break:break-all;
 }
-.upload-preview-info{flex:1;min-width:240px;}
-.upload-preview-info h4{font-size:14px;font-weight:600;margin-bottom:14px;word-break:break-all;}
 .field{margin-bottom:14px;}
-.field label{display:block;font-size:12px;font-weight:500;color:var(--text-dim);margin-bottom:5px;}
-.field input[type="text"]{
-  width:100%;height:36px;background:var(--bg-input);
-  border:1px solid var(--border);border-radius:var(--radius-sm);
-  color:var(--text);padding:0 12px;font-size:13px;
-  font-family:var(--font);outline:none;transition:border-color .15s;
+.field label{
+  display:block;font-size:12px;font-weight:600;
+  color:var(--dim);margin-bottom:6px;letter-spacing:.1px;
 }
-.field input[type="text"]:focus{border-color:var(--border-hover);}
+.field input[type=text]{
+  width:100%;height:42px;background:var(--input);
+  border:1px solid var(--border);border-radius:var(--rs);
+  color:var(--text);padding:0 12px;font-size:15px;
+  font-family:inherit;outline:none;-webkit-appearance:none;
+}
+.field input[type=text]:focus{border-color:var(--bh);}
 
-.check-group{display:flex;flex-wrap:wrap;gap:8px;}
-.check-pill{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:7px 12px;background:var(--bg-input);
-  border:1px solid var(--border);border-radius:99px;
-  cursor:pointer;font-size:12px;font-weight:500;
+.pills{display:flex;flex-wrap:wrap;gap:8px;}
+.pill{
+  display:inline-flex;align-items:center;gap:7px;
+  padding:9px 14px;background:var(--input);
+  border:1.5px solid var(--border);border-radius:99px;
+  cursor:pointer;font-size:13px;font-weight:600;
   transition:all .15s;user-select:none;
+  -webkit-user-select:none;
 }
-.check-pill:hover{border-color:var(--border-hover);}
-.check-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .15s;}
-.check-pill.checked-nsfw{border-color:var(--danger);background:rgba(255,77,77,.12);}
-.check-pill.checked-nsfw .dot{background:var(--danger);}
-.check-pill.checked-gore{border-color:var(--warn);background:rgba(255,184,77,.12);}
-.check-pill.checked-gore .dot{background:var(--warn);}
-.check-pill.checked-other{border-color:var(--text-dim);background:rgba(160,160,160,.12);}
-.check-pill.checked-other .dot{background:var(--text-dim);}
+.pill:active{transform:scale(.96);}
+.pill .d{width:8px;height:8px;border-radius:50%;background:var(--border);
+  transition:background .15s;flex-shrink:0;}
+.pill[data-t=nsfw].on{border-color:var(--danger);background:rgba(255,77,77,.14);color:#fff;}
+.pill[data-t=nsfw].on .d{background:var(--danger);}
+.pill[data-t=gore].on{border-color:var(--warn);background:rgba(255,184,77,.14);color:#fff;}
+.pill[data-t=gore].on .d{background:var(--warn);}
+.pill[data-t=other].on{border-color:var(--dim);background:rgba(160,160,160,.14);color:#fff;}
+.pill[data-t=other].on .d{background:var(--dim);}
 
-.settings-panel{
-  background:var(--bg-card);border:1px solid var(--border);
-  border-radius:var(--radius);padding:24px;max-width:640px;
+.actions{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+.actions .btn{flex:1;min-width:120px;}
+
+/* IA indicator */
+.ia{
+  display:none;align-items:center;gap:8px;
+  font-size:11px;color:var(--mute);
+  padding:8px 12px;background:var(--elev);
+  border:1px solid var(--border);border-radius:99px;
+  margin-top:12px;
 }
-.settings-panel h3{
-  font-size:15px;font-weight:600;margin-bottom:20px;
-  padding-bottom:12px;border-bottom:1px solid var(--border);
+.ia.on{display:inline-flex;}
+.spin{
+  width:12px;height:12px;border:2px solid var(--border);
+  border-top-color:var(--dim);border-radius:50%;
+  animation:sp .6s linear infinite;flex-shrink:0;
 }
-.setting-row{
-  display:flex;align-items:center;justify-content:space-between;
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* SETTINGS */
+.settings{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:4px 16px;max-width:600px;
+}
+.settings h3{
+  font-size:14px;font-weight:700;letter-spacing:-.1px;
+  margin:0 -16px 0;padding:14px 16px 12px;
+  border-bottom:1px solid var(--border);
+}
+.srow{
+  display:flex;align-items:center;gap:14px;
   padding:14px 0;border-bottom:1px solid var(--border);
 }
-.setting-row:last-child{border-bottom:none;}
-.setting-info{flex:1;padding-right:16px;}
-.setting-info .name{font-size:13px;font-weight:500;margin-bottom:3px;}
-.setting-info .desc{font-size:11px;color:var(--text-mute);line-height:1.4;}
-
-.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
-.toggle input{opacity:0;width:0;height:0;position:absolute;}
-.toggle .slider{
+.srow:last-child{border-bottom:none;}
+.sinfo{flex:1;min-width:0;}
+.sinfo .n{font-size:14px;font-weight:600;margin-bottom:3px;}
+.sinfo .d{font-size:12px;color:var(--mute);line-height:1.45;}
+.tg{position:relative;width:46px;height:26px;flex-shrink:0;}
+.tg input{position:absolute;opacity:0;width:0;height:0;}
+.tg .sl{
   position:absolute;inset:0;background:var(--border);
   border-radius:99px;cursor:pointer;transition:background .2s;
 }
-.toggle .slider::before{
-  content:'';position:absolute;width:16px;height:16px;
-  left:3px;top:3px;background:var(--text-dim);
-  border-radius:50%;transition:all .2s;
+.tg .sl::before{
+  content:'';position:absolute;
+  width:20px;height:20px;left:3px;top:3px;
+  background:var(--dim);border-radius:50%;transition:all .2s;
 }
-.toggle input:checked + .slider{background:var(--accent);}
-.toggle input:checked + .slider::before{transform:translateX(18px);background:var(--accent-inv);}
+.tg input:checked + .sl{background:var(--accent);}
+.tg input:checked + .sl::before{transform:translateX(20px);background:var(--inv);}
 
-.modal-overlay{
-  position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.88);
-  backdrop-filter:blur(12px);display:none;
-  align-items:center;justify-content:center;padding:24px;
+/* MODAL */
+.modal{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(0,0,0,.92);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  display:none;align-items:center;justify-content:center;
+  padding:16px;
 }
-.modal-overlay.open{display:flex;}
-.modal-content{
-  max-width:90vw;max-height:90vh;position:relative;
-  border-radius:var(--radius);overflow:hidden;
-  box-shadow:var(--shadow);background:var(--bg-card);
+.modal.on{display:flex;}
+.modal-in{position:relative;max-width:100%;max-height:100%;}
+.modal img{
+  max-width:calc(100vw - 32px);max-height:calc(100vh - 80px);
+  display:block;border-radius:var(--r);object-fit:contain;
 }
-.modal-content img{max-width:90vw;max-height:80vh;display:block;object-fit:contain;}
-.modal-content img.censored{filter:blur(var(--blur-amount)) brightness(.55);transform:scale(1.05);}
-.modal-close{
-  position:absolute;top:12px;right:12px;width:32px;height:32px;
-  background:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.15);
-  border-radius:50%;color:#fff;font-size:16px;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;z-index:10;transition:background .15s;
+.modal img.cens{filter:blur(var(--blur)) brightness(.55);}
+.mclose{
+  position:absolute;top:-44px;right:0;
+  width:36px;height:36px;background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.15);border-radius:50%;
+  color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;-webkit-appearance:none;
 }
-.modal-close:hover{background:rgba(0,0,0,.9);}
 
-.toast-container{
-  position:fixed;bottom:24px;right:24px;z-index:2000;
-  display:flex;flex-direction:column;gap:8px;
+/* TOAST */
+.toasts{
+  position:fixed;left:12px;right:12px;bottom:12px;
+  z-index:2000;display:flex;flex-direction:column;gap:8px;
+  align-items:center;pointer-events:none;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+@media(min-width:640px){
+  .toasts{left:auto;right:20px;bottom:20px;align-items:flex-end;}
 }
 .toast{
-  background:var(--bg-card);border:1px solid var(--border);
-  border-radius:var(--radius-sm);padding:12px 16px;font-size:13px;
-  display:flex;align-items:center;gap:10px;
-  box-shadow:var(--shadow);animation:toastIn .25s ease;max-width:340px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--rs);padding:12px 16px;font-size:13px;
+  box-shadow:0 6px 24px rgba(0,0,0,.6);
+  max-width:min(92vw,380px);pointer-events:auto;
+  animation:tin .25s ease;line-height:1.4;
 }
-.toast.success{border-left:3px solid var(--ok);}
-.toast.error{border-left:3px solid var(--danger);}
-.toast.warn{border-left:3px solid var(--warn);}
-@keyframes toastIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.toast.s{border-left:3px solid var(--ok);}
+.toast.e{border-left:3px solid var(--danger);}
+.toast.w{border-left:3px solid var(--warn);}
+@keyframes tin{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
 
-.hidden{display:none !important;}
+.hide{display:none !important;}
 
-.scan-indicator{
-  display:none;align-items:center;gap:8px;
-  font-size:11px;color:var(--text-mute);padding:6px 10px;
-  background:var(--bg-elev);border:1px solid var(--border);
-  border-radius:99px;margin-top:8px;
+/* barre IA discrète */
+#iaBar{
+  display:none;font-size:11px;color:var(--mute);
+  padding:6px 10px;background:var(--elev);
+  border:1px solid var(--border);border-radius:99px;
+  margin-bottom:12px;align-items:center;gap:6px;
 }
-.scan-indicator.visible{display:inline-flex;}
-.spinner{
-  width:12px;height:12px;border:2px solid var(--border);
-  border-top-color:var(--text-dim);border-radius:50%;
-  animation:spin .6s linear infinite;
-}
-@keyframes spin{to{transform:rotate(360deg);}}
+#iaBar.on{display:inline-flex;}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="header-inner">
-    <a href="#" class="logo" onclick="switchTab('browse');return false;">
-      post<span class="dot">.</span>it
-      <span class="logo-badge">beta</span>
+  <div class="hd">
+    <a class="logo" href="#" onclick="go('browse');return false;">
+      <b>post</b><span class="dot">.</span><b>it</b>
+      <span class="tag">beta</span>
     </a>
-    <div classsettings="search-wrap">
-      <svg viewBox')="0 0 24 24" fill"="none" stroke="currentColor title" stroke-width="2"=" stroke-linecap="round">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/>
       </svg>
-      <input type="text" class="search-input" id="searchInput" placeholder="Rechercher des photos…" autocomplete="off">
+      <input id="q" type="text" placeholder="Rechercher…" autocomplete="off" enterkeyhint="search">
     </div>
-    <div class="header-actions">
-      <button class="btn" onclick="switchTab('upload')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        Upload
-      </button>
-      <button class="btn btn-icon btn-ghost" onclick="switchTab('Paramètres">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-        </svg>
-      </button>
-    </div>
+    <button class="icobtn" onclick="go('settings')" aria-label="Paramètres">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </button>
   </div>
 </header>
 
 <main>
   <div class="tabs">
-    <button class="tab active" data-tab="browse" onclick="switchTab('browse')">Explorer</button>
-    <button class="tab" data-tab="upload" onclick="switchTab('upload')">Uploader</button>
-    <button class="tab" data-tab="settings" onclick="switchTab('settings')">Paramètres</button>
+    <button class="tab active" data-t="browse" onclick="go('browse')">Explorer</button>
+    <button class="tab" data-t="upload" onclick="go('upload')">Uploader</button>
+    <button class="tab" data-t="settings" onclick="go('settings')">Paramètres</button>
   </div>
 
   <!-- BROWSE -->
-  <section id="tab-browse">
-    <div class="section-head">
-      <div>
-        <div class="section-title" id="galleryTitle">Toutes les photos</div>
-        <div class="section-sub" id="gallerySub">—</div>
-      </div>
+  <section id="pane-browse">
+    <div class="sh">
+      <h2 id="ttl">Toutes les photos</h2>
+      <p id="sub">—</p>
     </div>
-    <div class="gallery" id="gallery"></div>
-    <div class="empty hidden" id="emptyState">
-      <div class="empty-icon">📷</div>
-      <div class="empty-title">Aucune photo trouvée</div>
-      <div class="empty-text">Essayez un autre terme de recherche ou uploadez la première photo !</div>
+    <div id="iaBar"><div class="spin"></div><span id="iaBarTxt">Chargement IA…</span></div>
+    <div class="grid" id="grid"></div>
+    <div class="empty hide" id="empty">
+      <div class="e-ico">📷</div>
+      <div class="e-t">Aucune photo</div>
+      <div class="e-d">Essayez un autre mot ou uploadez la première photo.</div>
     </div>
   </section>
 
   <!-- UPLOAD -->
-  <section id="tab-upload" class="hidden">
-    <div class="section-head">
-      <div>
-        <div class="section-title">Uploader une photo</div>
-        <div class="section-sub">Déclarez le contenu pour que les autres puissent le censurer s'ils le souhaitent.</div>
-      </div>
+  <section id="pane-upload" class="hide">
+    <div class="sh">
+      <h2>Uploader une photo</h2>
+      <p>Déclarez le contenu pour que les autres puissent le censurer s'ils le veulent.</p>
     </div>
 
-    <div class="upload-zone" id="uploadZone">
-      <div class="icon">⬆️</div>
-      <div class="title">Glissez une image ici</div>
-      <div class="sub">ou cliquez pour parcourir — JPG, PNG, WebP, GIF (max 10 Mo)</div>
-      <button class="btn btn-primary" type="button" id="pickFileBtn">Choisir un fichier</button>
-      <input type="file" id="fileInput" accept="image/*" style="display:none">
+    <div class="uzone" id="drop">
+      <div class="uz-ico">⬆️</div>
+      <div class="uz-t">Ajouter une image</div>
+      <div class="uz-d">JPG, PNG, WebP, GIF — max 10 Mo</div>
+      <button class="btn p full" type="button" id="pick">Choisir un fichier</button>
+      <input id="file" type="file" accept="image/*" style="display:none">
     </div>
 
-    <div class="upload-preview" id="uploadPreview">
-      <div class="upload-preview-inner">
-        <img id="previewImg" src="" alt="aperçu">
-        <div class="upload-preview-info">
-          <h4 id="previewName">image.jpg</h4>
-          <div class="field">
-            <label>Titre</label>
-            <input type="text" id="uploadTitle" placeholder="Donnez un titre à votre photo…" maxlength="80">
+    <div class="preview" id="prev">
+      <div class="preview-in">
+        <img id="pimg" alt="">
+        <div class="fname" id="pname"></div>
+
+        <div class="field">
+          <label>Titre</label>
+          <input id="ptitle" type="text" placeholder="Titre de la photo…" maxlength="80">
+        </div>
+
+        <div class="field">
+          <label>Classification (optionnel)</label>
+          <div class="pills">
+            <div class="pill" data-t="nsfw" onclick="pillTap(this)"><span class="d"></span>NSFW</div>
+            <div class="pill" data-t="gore" onclick="pillTap(this)"><span class="d"></span>Gore</div>
+            <div class="pill" data-t="other" onclick="pillTap(this)"><span class="d"></span>Autre</div>
           </div>
-          <div class="field">
-            <label>Classification du contenu (optionnel)</label>
-            <div class="check-group">
-              <div class="check-pill" id="pillNsfw" data-type="nsfw">
-                <span class="dot"></span> NSFW / Adulte
-              </div>
-              <div class="check-pill" id="pillGore" data-type="gore">
-                <span class="dot"></span> Gore / Violence
-              </div>
-              <div class="check-pill" id="pillOther" data-type="other">
-                <span class="dot"></span> Autre sensible
-              </div>
-            </div>
-          </div>
-          <div class="scan-indicator" id="uploadScanIndicator">
-            <div class="spinner"></div>
-            <span id="uploadScanText">Analyse IA…</span>
-          </div>
-          <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
-            <button class="btn btn-primary" id="confirmUploadBtn">Publier</button>
-            <button class="btn" id="cancelUploadBtn">Annuler</button>
-          </div>
+        </div>
+
+        <div class="ia" id="iaInd"><div class="spin"></div><span id="iaTxt">Analyse IA…</span></div>
+
+        <div class="actions">
+          <button class="btn p" id="publish">Publier</button>
+          <button class="btn" id="cancel">Annuler</button>
         </div>
       </div>
     </div>
   </section>
 
   <!-- SETTINGS -->
-  <section id="tab-settings" class="hidden">
-    <div class="section-head">
-      <div>
-        <div class="section-title">Paramètres de censure</div>
-        <div class="section-sub">Rien n'est censuré par défaut. Activez uniquement ce que vous voulez flouter.</div>
-      </div>
+  <section id="pane-settings" class="hide">
+    <div class="sh">
+      <h2>Paramètres de censure</h2>
+      <p>Rien n'est censuré par défaut. Activez ce que vous voulez flouter.</p>
     </div>
 
-    <div class="settings-panel">
-      <h3>Contenu à flouter dans la galerie</h3>
+    <div class="settings">
+      <h3>Flouter dans la galerie</h3>
 
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="name">NSFW / Adulte</div>
-          <div class="desc">Floute les images marquées comme contenu sexuel explicite.</div>
+      <div class="srow">
+        <div class="sinfo">
+          <div class="n">NSFW / Adulte</div>
+          <div class="d">Floute les images marquées comme contenu sexuel.</div>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="setNsfw">
-          <span class="slider"></span>
-        </label>
+        <label class="tg"><input type="checkbox" id="cNsfw"><span class="sl"></span></label>
       </div>
 
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="name">Gore / Violence</div>
-          <div class="desc">Floute les images contenant du sang, des blessures ou de la violence.</div>
+      <div class="srow">
+        <div class="sinfo">
+          <div class="n">Gore / Violence</div>
+          <div class="d">Floute le sang, blessures, violence.</div>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="setGore">
-          <span class="slider"></span>
-        </label>
+        <label class="tg"><input type="checkbox" id="cGore"><span class="sl"></span></label>
       </div>
 
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="name">Autres contenus sensibles</div>
-          <div class="desc">Floute les images marquées comme « autres » (drogues, armes, etc.).</div>
+      <div class="srow">
+        <div class="sinfo">
+          <div class="n">Autres contenus sensibles</div>
+          <div class="d">Floute les images marquées « autre ».</div>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="setOther">
-          <span class="slider"></span>
-        </label>
+        <label class="tg"><input type="checkbox" id="cOther"><span class="sl"></span></label>
       </div>
 
-      <div class="setting-row">
-        <div class="setting-info">
-          <div class="name">Détection IA automatique</div>
-          <div class="desc">Signale et floute les images que l'IA juge dangereuses mais non déclarées.</div>
+      <div class="srow">
+        <div class="sinfo">
+          <div class="n">Détection IA automatique</div>
+          <div class="d">L'IA analyse les nouvelles images et coche NSFW si besoin.</div>
         </div>
-        <label class="toggle">
-          <input type="checkbox" id="setAutoIA">
-          <span class="slider"></span>
-        </label>
+        <label class="tg"><input type="checkbox" id="cIA" checked><span class="sl"></span></label>
       </div>
     </div>
   </section>
 </main>
 
-<div class="modal-overlay" id="modal" onclick="closeModal(event)">
-  <div class="modal-content" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <img id="modalImg" src="" alt="">
+<div class="modal" id="modal" onclick="closeModal(event)">
+  <div class="modal-in" onclick="event.stopPropagation()">
+    <button class="mclose" onclick="closeModal()">✕</button>
+    <img id="mimg" alt="">
   </div>
 </div>
 
-<div class="toast-container" id="toastContainer"></div>
+<div class="toasts" id="toasts"></div>
 
 <script>
+"use strict";
+
 /* ============================================================
-   POST.IT — application
+   POST.IT — JS robuste pour mobile
    ============================================================ */
 
-const state = {
+// ---------- SVG de démo (aucune dépendance réseau) ----------
+function svgPhoto(c1, c2, emoji, label){
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/>
+    </linearGradient></defs>
+    <rect width="400" height="400" fill="url(#g)"/>
+    <text x="200" y="215" font-size="110" text-anchor="middle" dominant-baseline="middle">${emoji}</text>
+    <text x="200" y="330" font-size="20" font-weight="700" text-anchor="middle"
+      fill="rgba(255,255,255,.85)" font-family="sans-serif">${label}</text>
+  </svg>`;
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+}
+
+const DEMO = [
+  {id:'d1', title:'Coucher de soleil en montagne', c1:'#ff7e5f', c2:'#feb47b', e:'🏔️', l:'Nature',
+   tags:['nature','montagne'], nsfw:false, gore:false, other:false, date:Date.now()-86400000*3},
+  {id:'d2', title:'Chaton tout mignon', c1:'#4facfe', c2:'#00f2fe', e:'🐱', l:'Animal',
+   tags:['animal'], nsfw:false, gore:false, other:false, date:Date.now()-86400000*2},
+  {id:'d3', title:'Art abstrait', c1:'#8e2de2', c2:'#4a00e0', e:'🎨', l:'Art',
+   tags:['art'], nsfw:false, gore:false, other:true, date:Date.now()-86400000*5},
+  {id:'d4', title:'Néons urbains la nuit', c1:'#fc466b', c2:'#3f5efb', e:'🌃', l:'Urbain',
+   tags:['urbain','nuit'], nsfw:false, gore:false, other:false, date:Date.now()-86400000},
+  {id:'d5', title:'Forêt brumeuse', c1:'#134e5e', c2:'#71b280', e:'🌲', l:'Nature',
+   tags:['nature'], nsfw:false, gore:false, other:false, date:Date.now()-3600000*12},
+  {id:'d6', title:'Galaxie lointaine', c1:'#200122', c2:'#6f0000', e:'🌌', l:'Espace',
+   tags:['espace'], nsfw:false, gore:false, other:false, date:Date.now()-86400000*7},
+].map(d => ({...d, dataUrl: svgPhoto(d.c1, d.c2, d.e, d.l)}));
+
+// ---------- État global ----------
+const S = {
   photos: [],
-  currentTab: 'browse',
-  searchQuery: '',
-  // ← PAR DÉFAUT : RIEN N'EST CENSURÉ
-  settings: {
-    censorNsfw: false,
-    censorGore: false,
-    censorOther: false,
-    autoIA: true,
-  },
-  pendingUpload: null, // { dataUrl, fileName, title, nsfw, gore, other }
-  nsfwModel: null,
+  tab: 'browse',
+  q: '',
+  // PAR DÉFAUT : RIEN N'EST CENSURÉ
+  cens: { nsfw:false, gore:false, other:false, ia:true },
+  pending: null,
+  model: null,
   modelLoading: false,
   modelReady: false,
+  iaFailed: false,
 };
 
-const DEMO_PHOTOS = [
-  {
-    id:'demo-1', title:'Paysage de montagne au coucher du soleil',
-    dataUrl:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
-    tags:[], nsfw:false, gore:false, other:false, aiFlagged:false,
-    date: Date.now() - 86400000 * 3,
+// ---------- Storage (résilient au mode privé) ----------
+const store = {
+  get(k){
+    try { const r = localStorage.getItem(k); return r ? JSON.parse(r) : null; }
+    catch(e){ return null; }
   },
-  {
-    id:'demo-2', title:'Chaton mignon dans un panier',
-    dataUrl:'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=600&q=80',
-    tags:['animal'], nsfw:false, gore:false, other:false, aiFlagged:false,
-    date: Date.now() - 86400000 * 2,
-  },
-  {
-    id:'demo-3', title:'Art abstrait sombre',
-    dataUrl:'https://images.unsplash.com/photo-1541701494587-cb58502866ab?w=600&q=80',
-    tags:['art'], nsfw:false, gore:false, other:true, aiFlagged:false,
-    date: Date.now() - 86400000 * 5,
-  },
-  {
-    id:'demo-4', title:'Ville la nuit — néons',
-    dataUrl:'https://images.unsplash.com/photo-1519608487953-e999c86e7455?w=600&q=80',
-    tags:['urbain'], nsfw:false, gore:false, other:false, aiFlagged:false,
-    date: Date.now() - 86400000 * 1,
-  },
-  {
-    id:'demo-5', title:'Forêt brumeuse',
-    dataUrl:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80',
-    tags:['nature'], nsfw:false, gore:false, other:false, aiFlagged:false,
-    date: Date.now() - 3600000 * 12,
-  },
-  {
-    id:'demo-6', title:'Espace — galaxie',
-    dataUrl:'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=600&q=80',
-    tags:['espace'], nsfw:false, gore:false, other:false, aiFlagged:false,
-    date: Date.now() - 86400000 * 7,
-  },
-];
-
-/* ---------- INIT ---------- */
-function boot(){
-  loadSettings();
-  loadPhotos();
-  bindTabs();
-  bindSearch();
-  bindUpload();
-  bindSettings();
-  renderGallery();
-  // Chargement IA en arrière-plan, non bloquant
-  setTimeout(loadModel, 500);
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
-} else {
-  boot();
-}
-
-/* ---------- ONGLETS ---------- */
-function bindTabs(){
-  document.querySelectorAll('.tab').forEach(btn => {
-    btn.addEventListener('click', () => switchTabrowse(btn.dataset','.tab));
-upload  });
-}
-
-function switchTab(tab){
-  state.currentTab = tab;
-  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
-  ['b','settings'].forEach(t => {
-    document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
-  });
-  if (tab === 'browse') renderGallery();
-}
-
-/* ---------- RECHERCHE ---------- */
-function bindSearch(){
-  const input = document.getElementById('searchInput');
-  let timer;
-  input.addEventListener('input', () => {
-    clearTimeout(timer);
-    timer = setTimeout(() => {
-      state.searchQuery = input.value.trim().toLowerCase();
-      renderGallery();
-    }, 180);
-  });
-}
-
-/* ---------- PARAMÈTRES (défaut : tout OFF) ---------- */
-function loadSettings(){
-  try {
-    const raw = localStorage.getItem('postit_settings_v2');
-    if (raw) {
-      const s = JSON.parse(raw);
-      state.settings = { ...state.settings, ...s };
-    }
-  } catch(e){}
-  document.getElementById('setNsfw').checked = state.settings.censorNsfw;
-  document.getElementById('setGore').checked = state.settings.censorGore;
-  document.getElementById('setOther').checked = state.settings.censorOther;
-  document.getElementById('setAutoIA').checked = state.settings.autoIA;
-}
-
-function bindSettings(){
-  const ids = ['setNsfw','setGore','setOther','setAutoIA'];
-  ids.forEach(id => {
-    document.getElementById(id).addEventListener('change', () => {
-      state.settings.censorNsfw = document.getElementById('setNsfw').checked;
-      state.settings.censorGore = document.getElementById('setGore').checked;
-      state.settings.censorOther = document.getElementById('setOther').checked;
-      state.settings.autoIA = document.getElementById('setAutoIA').checked;
-      try {
-        localStorage.setItem('postit_settings_v2', JSON.stringify(state.settings));
-      } catch(e){}
-      renderGallery();
-      showToast('Paramètres sauvegardés', 'success', 1800);
-    });
-  });
-}
-
-/* ---------- PHOTOS ---------- */
-function loadPhotos(){
-  try {
-    const raw = localStorage.getItem('postit_photos_v2');
-    if (raw) {
-      const saved = JSON.parse(raw);
-      if (Array.isArray(saved) && saved.length) {
-        state.photos = saved;
-        return;
-      }
-    }
-  } catch(e){}
-  state.photos = [...DEMO_PHOTOS];
-}
-
-function persistPhotos(){
-  try {
-    localStorage.setItem('postit_photos_v2', JSON.stringify(state.photos));
-  } catch(e){
-    console.warn('localStorage plein');
+  set(k, v){
+    try { localStorage.setItem(k, JSON.stringify(v)); }
+    catch(e){ /* privé/quota : on ignore */ }
   }
+};
+
+// ---------- Toast ----------
+function toast(msg, type){
+  const wrap = document.getElementById('toasts');
+  if (!wrap) return;
+  const el = document.createElement('div');
+  el j.className = 'toast' + (type ? ' ' + type : '');
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'opacity .3s, transform .3s';
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(10';
+px)';
+    setTimeout(() => el .remove(), 320);
+  }, type === ' tryw' ? 5000 :  {2800);
 }
 
-/* ---------- RENDU ---------- */
-function renderGallery(){
-  const gallery = document.getElementById('gallery');
-  const empty = document.getElementById('emptyState');
-  const title = document.getElementById('galleryTitle');
-  const sub = document.getElementById('gallerySub');
+// ---------- Utilitaires return ----------
+function esc(s){
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function ago(ts){
+  if (!ts) return '';
+  const d = Date.now() - ts, s = Math.floor(d/1000);
+  if (s < 60) return "à l'instant";
+  const m = Math.floor(s/60); if (m < 60) return 'il y a ' + m + ' min';
+  const h = Math.floor(m/60); if (h < 24) return 'il y a ' + h + ' h';
+  const j = Math.floor(h/24); if (j < 7) return 'il y a ' + j + ' new Date(ts).toLocaleDateString('fr-FR',{day:'numeric',month:'short'}); }
+  catch(e){ return ''; }
+}
 
-  let list = [...state.photos];
+// ---------- Navigation ----------
+function go(tab){
+  S.tab = tab;
+  ['browse','upload','settings'].forEach(t => {
+    const pane = document.getElementById('pane-' + t);
+    if (pane) pane.classList.toggle('hide', t !== tab);
+  });
+  document.querySelectorAll('.tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.t === tab);
+  });
+  if (tab === 'browse') render();
+}
 
-  if (state.searchQuery){
-    const q = state.searchQuery;
+// ---------- Censure ----------
+function censored(p){
+  const c = S.cens;
+  if (p.nsfw && c.nsfw) return true;
+  if (p.gore && c.gore) return true;
+  if (p.other && c.other) return true;
+  if (p.aiFlag && c.ia) return true;
+  return false;
+}
+
+// ---------- Rendu galerie ----------
+function render(){
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  const ttl = document.getElementById('ttl');
+  const sub = document.getElementById('sub');
+  if (!grid) return;
+
+  let list = S.photos.slice();
+  if (S.q){
+    const q = S.q;
     list = list.filter(p =>
-      (p.title || '').toLowerCase().includes(q) ||
-      (p.tags || []).some(t => t.toLowerCase().includes(q))
+      (p.title || '').toLowerCase().indexOf(q) !== -1 ||
+      (p.tags || []).some(t => t.toLowerCase().indexOf(q) !== -1)
     );
-    title.textContent = `Résultats pour « ${state.searchQuery} »`;
+    ttl.textContent = 'Résultats : « ' + S.q + ' »';
   } else {
-    title.textContent = 'Toutes les photos';
+    ttl.textContent = 'Toutes les photos';
   }
-
   list.sort((a,b) => (b.date||0) - (a.date||0));
-  sub.textContent = `${list.length} photo${list.length > 1 ? 's' : ''}`;
+  sub.textContent = list.length + ' photo' + (list.length > 1 ? 's' : '');
 
   if (!list.length){
-    gallery.innerHTML = '';
-    empty.classList.remove('hidden');
+    grid.innerHTML = '';
+    empty.classList.remove('hide');
     return;
   }
-  empty.classList.add('hidden');
+  empty.classList.add('hide');
 
-  gallery.innerHTML = list.map(p => renderCard(p)).join('');
+  grid.innerHTML = list.map(p => {
+    const c = censored(p);
+    let badges = '';
+    if (p.nsfw) badges += '<span class="b n">NSFW</span>';
+    if (p.gore) badges += '<span class="b g">GORE</span>';
+    if (p.other) badges += '<span class="b o">SENSIBLE</span>';
+    if (p.aiFlag && S.cens.ia) badges += '<span class="b i">⚠ IA</span>';
 
-  // attacher les événements (zoom + révèle)
-  gallery.querySelectorAll('.card-img-wrap').forEach(el => {
-    const id = el.closest('.card').dataset.id;
-    el.addEventListener('click', (e) => {
-      // si on clique sur l'overlay de censure, on révèle au lieu d'ouvrir
-      const overlay = el.querySelector('.censor-overlay.visible');
-      if (overlay){
-        e.stopPropagation();
-        overlay.classList.remove('visible');
-        const img = el.querySelector('img');
-        if (img) img.classList.remove('censored');
+    const cover = c
+      ? '<div class="cover on"><div class="ico">🔒</div><div class="lbl">Masqué</div><div class="hint">Toucher pour voir</div></div>'
+      : '';
+
+    return '<div class="card" data-id="' + esc(p.id) + '">'
+      + '<div class="imgbox">'
+      +   '<img src="' + p.dataUrl + '" alt="' + esc(p.title) + '" class="' + (c ? 'cens' : '') + '" loading="lazy">'
+      +   cover
+      + '</div>'
+      + '<div class="badges">' + badges + '</div>'
+      + '<div class="body">'
+      +   '<div class="title">' + esc(p.title) + '</div>'
+      +   '<div class="meta">' + ago(p.date) + '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+
+  // Événements (délégation)
+  grid.querySelectorAll('.card').forEach(card => {
+    const id = card.dataset.id;
+    const box = card.querySelector('.imgbox');
+    if (!box) return;
+    box.addEventListener('click', () => {
+      const cover = box.querySelector('.cover.on');
+      if (cover){
+        // révéler
+        cover.classList.remove('on');
+        const img = box.querySelector('img');
+        if (img) img.classList.remove('cens');
         return;
       }
       openModal(id);
     });
-  });
+  e });
 }
 
-function renderCard(photo){
-  const censored = shouldCensor(photo);
-
-  let badges = '';
-  if (photo.nsfw) badges += '<span class="badge badge-nsfw">NSFW</span>';
-  if (photo.gore) badges += '<span class="badge badge-gore">GORE</span>';
-  if (photo.other) badges += '<span class="badge badge-other">SENSIBLE</span>';
-  if (photo.aiFlagged && state.settings.autoIA) badges += '<span class="badge badge-ia">⚠ IA</span>';
-
-  const overlay = censored ? `
-    <div class="censor-overlay visible">
-      <div class="icon">🔒</div>
-      <div class="label">Contenu masqué</div>
-      <div class="hint">Cliquez pour révéler</div>
-    </div>` : '';
-
-  return `
-    <div class="card" data-id="${photo.id}">
-      <div class="card-img-wrap">
-        <img src="${photo.dataUrl}" alt="${escapeHtml(photo.title)}"
-             class="${censored ? 'censored' : ''}" loading="lazy">
-        ${overlay}
-      </div>
-      <div class="card-badges">${badges}</div>
-      <div class="card-body">
-        <div class="card-title">${escapeHtml(photo.title)}</div>
-        <div class="card-meta">
-          <span>${timeAgo(photo.date)}</span>
-          ${(photo.tags||[]).slice(0,2).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function shouldCensor(photo){
-  const s = state.settings;
-  if (photo.nsfw && s.censorNsfw) return true;
-  if (photo.gore && s.censorGore) return true;
-  if (photo.other && s.censorOther) return true;
-  if (photo.aiFlagged && s.autoIA) return true;
-  return false;
-}
-
-/* ---------- MODAL ---------- */
+// ---------- Modal --------- =>-
 function openModal(id){
-  const photo = state.photos.find(p => p.id === id);
-  if (!photo) return;
-  const modal = document.getElementById('modal');
-  const img = document.getElementById('modalImg');
-  img.src = photo.dataUrl;
-  img.alt = photo.title;
-  img.className = shouldCensor(photo) ? 'censored' : '';
-  modal.classList.add('open');
+  const p = {
+ S.photos.find(x => x     .id === id);
+  if e (!p) return;
+  const.preventDefault m = document.getElementById('modal');
+  const img = document.getElementById('mimg');
+  img.src = p.dataUrl;
+  img.alt = p.title || '';
+  img.className = censored(p) ? 'cens' : '';
+  m.classList.add('on');
 }
-
 function closeModal(e){
-  if (e && e.target !== document.getElementById('modal') && !e.target.classList.contains('modal-close')) return;
-  document.getElementById('modal').classList.remove('open');
+  if (e && e.target && e.target.id !== 'modal' &&
+      !e.target.classList.contains('mclose')) return;
+  const m = document.getElementById('modal');
+  if (m) m.classList.remove('on');
 }
-
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') closeModal();
 });
 
-/* ---------- UPLOAD ---------- */
-function bindUpload(){
-  const zone = document.getElementById('uploadZone');
-  const input = document.getElementById('fileInput');
-  const pickBtn = document.getElementById('pickFileBtn');
+// ---------- Upload ----------
+function initUpload(){
+  const pick = document.getElementById('pick');
+  const file = document.getElementById('file');
+  const drop = document.getElementById('drop');
 
-  pickBtn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    input.click();
-  });
-
-  zone.addEventListener('click', () => input.click());
-
-  zone.addEventListener('dragover', e => {
-    e.preventDefault();
-    zone.classList.add('dragover');
-  });
-  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
-  });
-
-  input.addEventListener('change', () => {
-    if (input.files[0]) handleFile(input.files[0]);
-    input.value = '';
-  });
-
-  // Pills (classification)
-  ['pillNsfw','pillGore','pillOther'].forEach(id => {
-    const el = document.getElementById(id);
-    el.addEventListener('click', () => togglePill(id));
-  });
-
-  document.getElementById('confirmUploadBtn').addEventListener('click', confirmUpload);
-  document.getElementById('cancelUploadBtn').addEventListener('click', cancelUpload);
-}
-
-function togglePill(id){
-  const el = document.getElementById(id);
-  const type = el.dataset.type;
-  const active = el.classList.toggle('checked-' + type);
-  if (state.pendingUpload) {
-    state.pendingUpload[type] = active;
+  if (pick && file){
+    pick.addEventListener('click', e => {
+      e.stopPropagation();
+      try { file.click(); } catch(err){}
+    });
   }
+  if (drop && file){
+    drop.addEventListener('click', e => {
+      if (e.target === pick) return;
+      try { file.click(); } catch(err){}
+    });
+    drop.addEventListener('dragover', e => {
+      e.preventDefault();
+      drop.classList.add('drag');
+    });
+    drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+    drop.addEventListener('drop',();
+      drop.classList.remove('drag');
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) handleFile(f);
+    });
+  }
+  if (file){
+    file.addEventListener('change', () => {
+      const f = file.files && file.files[0];
+      if (f) handleFile(f);
+      file.value = '';
+    });
+  }
+
+  const pub = document.getElementById('publish');
+  const cancel = document.getElementById('cancel');
+  if (pub) pub.addEventListener('click', publish);
+  if (cancel) cancel.addEventListener('click', cancelPreview);
 }
 
-function handleFile(file){
-  if (!file.type.startsWith('image/')){
-    showToast('Format non supporté. Choisissez une image.', 'error');
+function handleFile(f){
+  if (!f || !f.type || f.type.indexOf('image/') !== 0){
+    toast('Format non supporté', 'e');
     return;
   }
-  if (file.size > 10 * 1024 * 1024){
-    showToast('Image trop lourde (max 10 Mo).', 'error');
+  if (f.size > 10 * 1024 * 1024){
+    toast('Image trop lourde (max 10 Mo)', 'e');
     return;
   }
 
   const reader = new FileReader();
-  reader.onload = e => {
-    state.pendingUpload = {
-      fileName: file.name,
-      dataUrl: e.target.result,
-      title: file.name.replace(/\.[^.]+$/, ''),
-      nsfw: false,
-      gore: false,
-      other: false,
+  reader.onload = ev => {
+    S.pending = {
+      fileName: f.name,
+      dataUrl: ev.target.result,
+      title: f.name.replace(/\.[^.]+$/, ''),
+      nsfw: false, gore: false, other: false, aiFlag: false,
     };
-    showUploadPreview();
+    showPreview();
   };
-  reader.onerror = () => showToast('Erreur de lecture du fichier', 'error');
-  reader.readAsDataURL(file);
+  reader.onerror = () => toast('Erreur de lecture du fichier', 'e');
+  reader.readAsDataURL(f);
 }
 
-function showUploadPreview(){
-  const p = state.pendingUpload;
+function showPreview(){
+  const p = S.pending;
   if (!p) return;
-  document.getElementById('previewImg').src = p.dataUrl;
-  document.getElementById('previewName').textContent = p.fileName;
-  document.getElementById('uploadTitle').value = p.title;
-  // reset les pills
-  ['pillNsfw','pillGore','pillOther'].forEach(id => {
-    const el = document.getElementById(id);
-    el.classList.remove('checked-nsfw','checked-gore','checked-other');
-  });
-  document.getElementById('uploadPreview').classList.add('visible');
-  // Analyse IA en fond
-  runAIAnalysisOnPending();
+  document.getElementById('pimg').src = p.dataUrl;
+  document.getElementById('pname').textContent = p.fileName;
+  document.getElementById('ptitle').value = p.title;
+
+  // Reset pills
+  document.querySelectorAll('.pill').forEach(el => el.classList.remove('on'));
+
+  document.getElementById('prev').classList.add('on');
+
+  // Lance l'analyse IA
+  if (S.cens.ia) analyzePending();
 }
 
-function cancelUpload(){
-  state.pendingUpload = null;
-  document.getElementById('uploadPreview').classList.remove('visible');
+function cancelPreview(){
+  S.pending = null;
+  document.getElementById('prev').classList.remove('on');
 }
 
-async function confirmUpload(){
-  const p = state.pendingUpload;
+function pillTap(el){
+  const on = el.classList.toggle('on');
+  if (!S.pending) return;
+  const t = el.dataset.t;
+  S.pending[t] = on;
+}
+
+function publish(){
+  const p = S.pending;
   if (!p) return;
+  const titleEl = document.getElementById('ptitle');
+  const title = (titleEl && titleEl.value.trim()) || 'Sans titre';
 
-  const title = document.getElementById('uploadTitle').value.trim() || 'Sans titre';
-
-  const newPhoto = {
-    id: 'up-' + Date.now() + '-' + Math.random().toString(36).slice(2,7),
-    title,
+  S.photos.unshift({
+    id: 'u' + Date.now() + Math.random().toString(36).slice(2,7),
+    title: title,
     dataUrl: p.dataUrl,
     tags: [],
     nsfw: !!p.nsfw,
     gore: !!p.gore,
     other: !!p.other,
-    aiFlagged: !!p.aiFlagged,
+    aiFlag: !!p.aiFlag,
     date: Date.now(),
-  };
+  });
 
-  state.photos.unshift(newPhoto);
-  persistPhotos();
-  cancelUpload();
-  switchTab('browse');
-  renderGallery();
-  showToast('Photo publiée !', 'success');
+  savePhotos();
+  cancelPreview();
+  go('browse');
+  toast('Photo publiée !', 's');
 }
 
-/* ---------- IA ---------- */
-async function loadModel(){
-  if (state.modelLoading || state.modelReady) return;
-  if (typeof nsfwjs === 'undefined'){
-    console.info('NSFWJS non chargé, IA désactivée.');
-    return;
+// ---------- Persistance ----------
+function loadPhotos(){
+  const saved = store.get('postit_photos_v3');
+  if (Array.isArray.c(saved) && saved.length){
+    S.photos = saved;
+  } else {
+   ens S.photos = DEMO.slice();
   }
-  state.modelLoading = true;
+}
+function save[keyPhotos(){
+  // On limite la taille] pour éviter le quota localStorage sur mobile =
   try {
-    state.nsfwModel = await nsfwjs.load();
-    state.modelReady = true;
-    console.info('Modèle IA chargé.');
+    store.set('postit_photos el_v3', S.photos.slice(0, 30));
+  } catch(e){}
+}
+
+// ---------- Paramètres ----------
+function loadCens(){
+  const saved = store.get('postit_cens_v3');
+  if (saved && typeof saved === 'object'){
+    S.cens = Object.assign({nsfw:false,gore:false,other:false,ia:true}, saved);
+  }
+  const cNsfw = document.getElementById('cNsfw');
+  const cGore = document.getElementById('cGore');
+  const cOther = document.getElementById('cOther');
+  const cIA = document.getElementById('cIA');
+  if (cNsfw) cNsfw.checked = !!S.cens.nsfw;
+  if (cGore) cGore.checked = !!S.cens.gore;
+  if (cOther) cOther.checked = !!S.cens.other;
+  if (cIA) cIA.checked = !!S.cens.ia;
+}
+function initSettings(){
+  const bind = (id, key) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('change', () => {
+      S.checked;
+      store.set('postit_cens_v3', S.cens);
+      render();
+    });
+  };
+  bind('cNsfw','nsfw');
+  bind('cGore','gore');
+  bind('cOther','other');
+  bind('cIA','ia');
+}
+
+// ---------- Recherche ----------
+function initSearch(){
+  const q = document.getElementById('q');
+  if (!q) return;
+  let t;
+  q.addEventListener('input', () => {
+    clearTimeout(t);
+    t = setTimeout(() => {
+      S.q = q.value.trim().toLowerCase();
+      if (S.tab !== 'browse') go('browse');
+      else render();
+    }, 180);
+  });
+}
+
+// ---------- IA (chargée EN ARRIÈRE-PLAN, non bloquante) ----------
+function loadScript(src){
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error('script fail'));
+    document.head.appendChild(s);
+  });
+}
+
+async function loadModel(){
+  if (S.modelReady || S.modelLoading || S.iaFailed) return;
+  if (!S.cens.ia) return;
+  S.modelLoading = true;
+
+  const bar = document.getElementById('iaBar');
+  const barTxt = document.getElementById('iaBarTxt');
+  if (bar) bar.classList.add('on');
+  if (barTxt) barTxt.textContent = 'Chargement IA…';
+
+  try {
+    await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js');
+    await loadScript('https://cdn.jsdelivr.net/npm/nsfwjs@4.1.0/dist/nsfwjs.min.js');
+    if (typeof window.nsfwjs === 'undefined') throw new Error('nsfwjs manquant');
+
+    S.model = await window.nsfwjs.load();
+    S.modelReady = true;
+    if (barTxt) barTxt.textContent = 'IA prête';
+    setTimeout(() => { if (bar) bar.classList.remove('on'); }, 1500);
   } catch(e){
     console.warn('IA indisponible :', e);
+    S.iaFailed = true;
+    if (barTxt) barTxt.textContent = 'IA indisponible';
+    setTimeout(() => { if (bar) bar.classList.remove('on'); }, 2500);
   } finally {
-    state.modelLoading = false;
+    S.modelLoading = false;
   }
 }
 
-function classifyImageDataUrl(dataUrl){
+function classify(dataUrl){
   return new Promise((resolve, reject) => {
-    if (!state.nsfwModel) return reject(new Error('Modèle non chargé'));
+    if (!S.model) return reject(new Error('no model'));
     const img = new Image();
-    // Ne pas mettre crossOrigin pour les data URLs (inutile) ni pour les images sans CORS
     img.onload = async () => {
       try {
-        const preds = await state.nsfwModel.classify(img);
-        const get = (n) => preds.find(p => p.className === n)?.probability || 0;
-        const porn = get('Porn');
-        const hentai = get('Hentai');
-        const sexy = get('Sexy');
+        const preds = await S.model.classify(img);
+        const get = n => {
+          const p = preds.find(x => x.className === n);
+          return p ? p.probability : 0;
+        };
+        const porn = get('Porn'), hentai = get('Hentai'), sexy = get('Sexy');
         const isNsfw = porn > 0.5 || hentai > 0.5 || sexy > 0.75;
-        resolve({ isNsfw, isDangerous: isNsfw, preds });
-      } catch(e){ reject(e); }
+        resolve({ isNsfw });
+      } catch(err){ reject(err); }
     };
     img.onerror = reject;
     img.src = dataUrl;
   });
 }
 
-async function runAIAnalysisOnPending(){
-  if (!state.settings.autoIA) return;
-  if (!state.modelReady) {
-    // tenter un chargement opportuniste
-    loadModel();
-    return;
-  }
-  const p = state.pendingUpload;
+async function analyzePending(){
+  const p = S.pending;
   if (!p) return;
 
-  const indicator = document.getElementById('uploadScanIndicator');
-  const text = document.getElementById('uploadScanText');
-  indicator.classList.add('visible');
-  text.textContent = 'Analyse IA en cours…';
+  // Si le modèle n'est pas prêt, on tente un chargement opportuniste
+  if (!S.modelReady){
+    if (!S.iaFailed && !S.modelLoading) loadModel();
+    return;
+  }
+
+  const ind = document.getElementById('iaInd');
+  const txt = document.getElementById('iaTxt');
+  if (ind) ind.classList.add('on');
+  if (txt) txt.textContent = 'Analyse IA…';
 
   try {
-    const res = await classifyImageDataUrl(p.dataUrl);
-    if (res.isNsfw && !p.nsfw){
+    const r = await classify(p.dataUrl);
+    if (r.isNsfw && !p.nsfw){
       p.nsfw = true;
-      const el = document.getElementById('pillNsfw');
-      if (el && !el.classList.contains('checked-nsfw')){
-        el.classList.add('checked-nsfw');
-      }
-      showToast('⚠ IA : contenu adulte détecté → case NSFW cochée.', 'warn', 4500);
+      const pill = document.querySelector('.pill[data-t=nsfw]');
+      if (pill) pill.classList.add('on');
+      toast('⚠ IA : contenu adulte détecté → NSFW coché', 'w');
     }
-    text.textContent = 'Analyse terminée';
+    if (txt) txt.textContent = 'Analyse terminée';
   } catch(e){
-    text.textContent = 'Analyse impossible';
+    if (txt) txt.textContent = 'Analyse impossible';
   } finally {
-    setTimeout(() => indicator.classList.remove('visible'), 1500);
+    setTimeout(() => { if (ind) ind.classList.remove('on'); }, 1200);
   }
 }
 
-/* ---------- TOASTS ---------- */
-function showToast(message, type='info', duration=3000){
-  const container = document.getElementById('toastContainer');
-  const el = document.createElement('div');
-  el.className = 'toast ' + type;
-  el.textContent = message;
-  container.appendChild(el);
-  setTimeout(() => {
-    el.style.opacity = '0';
-    el.style.transition = 'opacity .3s';
-    setTimeout(() => el.remove(), 320);
-  }, duration);
+// ---------- Boot ----------
+function boot(){
+  try {
+    loadCens();
+    loadPhotos();
+    initSearch();
+    initUpload();
+    initSettings();
+    render();
+
+    // Charger l'IA en arrière-plan après un délai (non bloquant)
+    if (S.cens.ia){
+      setTimeout(() => { try { loadModel(); } catch(e){} }, 2000);
+    }
+  } catch(e){
+    console.error('Boot error:', e);
+    // En cas de problème, on affiche au moins les photos de démo
+    try { S.photos = DEMO.slice(); render(); } catch(_){}
+  }
 }
 
-/* ---------- UTILS ---------- */
-function escapeHtml(str){
-  if (str == null) return '';
-  const d = document.createElement('div');
-  d.textContent = String(str);
-  return d.innerHTML;
-}
-
-function timeAgo(ts){
-  if (!ts) return '';
-  const diff = Date.now() - ts;
-  const sec = Math.floor(diff/1000);
-  if (sec < 60) return 'à l’instant';
-  const min = Math.floor(sec/60);
-  if (min < 60) return `il y a ${min} min`;
-  const h = Math.floor(min/60);
-  if (h < 24) return `il y a ${h} h`;
-  const d = Math.floor(h/24);
-  if (d < 7) return `il y a ${d} j`;
-  return new Date(ts).toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', boot);
+} else {
+  boot();
 }
 </script>
 </body>
